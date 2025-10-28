@@ -8,18 +8,31 @@ version = "1.0.0"
 description = "Flask + Neo4j web app"
 authors = [{ name = "Santosh KS", email = "23msrci060@jainuniversity.ac.in" }]
 dependencies = [
-    "Flask==2.3.3",
-    "Flask-Session==0.4.0",
-    "flask-cors==4.0.0",
-    "werkzeug==2.3.7",
-    "neo4j==5.14.0",
-    "python-dotenv==1.0.0",
-    "numpy==1.26.4",
-    "pandas==2.0.3",
-    "plotly==5.15.0",
-    "pytz==2023.3",
-    "sentence-transformers==2.2.2",
-    "mistralai==0.1.2"
+   # Build tools
+setuptools>=68.0.0
+wheel>=0.41.0
+pip>=25.0
+
+# Flask stack
+Flask==2.3.3
+Flask-Session==0.4.0
+flask-cors==4.0.0
+Werkzeug>=2.3.4  # updated for compatibility
+
+# Environment + Database
+python-dotenv==1.0.1
+neo4j==5.14.0
+
+# Data tools
+numpy==1.26.4
+pandas==2.0.3
+plotly==5.15.0
+pytz==2023.3
+
+# AI / NLP
+sentence-transformers==2.2.2
+mistralai==0.1.2
+
 ]
 
 [tool.setuptools]
