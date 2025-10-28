@@ -211,6 +211,9 @@ pywavelets
 
 
 PYTHON
+python
+python_version
+python==3.13
 
 
 PyYAML==6.0.2
