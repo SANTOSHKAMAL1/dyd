@@ -1,0 +1,1081 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Modern Color Palette */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --card-hover-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Enhanced Cards */
+    .modern-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+        border: none;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .modern-card:hover {
+        box-shadow: var(--card-hover-shadow);
+        transform: translateY(-5px);
+    }
+
+    .card-header-gradient {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .card-header-success {
+        background: var(--success-gradient);
+    }
+
+    .card-header-warning {
+        background: var(--warning-gradient);
+    }
+
+    .card-header-info {
+        background: var(--info-gradient);
+    }
+
+    /* Form Elements */
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        transform: translateY(-2px);
+    }
+
+    /* Enhanced Buttons */
+    .btn-gradient {
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        color: white;
+    }
+
+    .btn-success-gradient {
+        background: var(--success-gradient);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+    }
+
+    .btn-success-gradient:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(17, 153, 142, 0.6);
+        color: white;
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        height: 100%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: #667eea;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    /* Progress Bar */
+    .progress-modern {
+        height: 30px;
+        border-radius: 15px;
+        background: #e9ecef;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-bar-gradient {
+        background: var(--success-gradient);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: width 0.6s ease;
+    }
+
+    /* Table Enhancements */
+    .table-modern {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .table-modern thead {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .table-modern thead th {
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .table-modern tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #f8f9fa;
+        transform: scale(1.01);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Badges */
+    .badge-gradient {
+        background: var(--primary-gradient);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    /* Percentage Preview */
+    .percentage-preview {
+        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        border: 2px solid #667eea;
+        border-radius: 15px;
+        padding: 1rem;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Alert Enhancements */
+    .alert-modern {
+        border-radius: 15px;
+        border: none;
+        padding: 1.25rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Summary Cards */
+    .summary-card {
+        border-radius: 15px;
+        border: 3px solid;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, currentColor, transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .summary-card:hover::before {
+        opacity: 1;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Button Group */
+    .btn-group-modern .btn {
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .btn-group-modern .btn:hover {
+        transform: scale(1.05);
+    }
+
+    /* Tips Section */
+    .tips-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .tips-list li {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: white;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        border-left: 4px solid #667eea;
+    }
+
+    .tips-list li:hover {
+        transform: translateX(5px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 20px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+        }
+    }
+
+    /* Custom scrollbar */
+    .table-responsive::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: var(--primary-gradient);
+        border-radius: 10px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #764ba2;
+    }
+
+    /* Finish Button Special Style */
+    .btn-finish {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-finish::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-finish:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Enhanced Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div style="position: relative; z-index: 1;">
+                <h1 class="mb-2">📚 Academic Marks Entry</h1>
+                <p class="mb-0 opacity-75">Enter your academic performance to get personalized course recommendations</p>
+            </div>
+            <div style="position: relative; z-index: 1;">
+                <span class="badge-gradient fs-5">
+                    {{ marks_data|length }} Subjects Added
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column - Add New Marks -->
+        <div class="col-lg-8">
+            <!-- Add Marks Card -->
+            <div class="modern-card mb-4">
+                <div class="card-header-gradient">
+                    <h5 class="mb-0">📝 Add New Marks</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="subject" class="form-label">📖 Select Subject *</label>
+                                <select class="form-select" id="subject" name="subject">
+                                    <option value="" selected disabled>Choose a subject...</option>
+                                    <option value="➕ Add Custom Subject">➕ Add Custom Subject</option>
+                                    {% for subject in default_subjects %}
+                                    <option value="{{ subject }}">{{ subject }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Select from predefined subjects or add custom</div>
+                            </div>
+                            <div class="col-md-6" id="custom-subject-container" style="display: none;">
+                                <label for="custom_subject" class="form-label">✏️ Custom Subject Name *</label>
+                                <input type="text" class="form-control" id="custom_subject" name="custom_subject" 
+                                       placeholder="e.g., Philosophy, Statistics">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="marks_scored" class="form-label">✅ Marks Scored *</label>
+                                <input type="number" class="form-control" id="marks_scored" name="marks_scored" 
+                                       min="0" step="0.1" placeholder="Enter marks scored">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="total_marks" class="form-label">💯 Total Marks *</label>
+                                <input type="number" class="form-control" id="total_marks" name="total_marks" 
+                                       min="1" step="0.1" value="100">
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div id="percentage-preview" class="percentage-preview" style="display: none;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>📊 Percentage:</strong>
+                                        <span id="percentage-value" class="fs-4 fw-bold text-primary">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <button type="submit" name="add_marks" class="btn btn-gradient w-100">
+                                    💾 Add Marks
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" name="finish" class="btn btn-success-gradient btn-finish w-100">
+                                    ✅ Finish & Continue to Survey
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="modern-card">
+                <div class="card-header-info">
+                    <h5 class="mb-0">💡 Tips & Guidelines</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="tips-list">
+                                <li>✓ Select from predefined subjects</li>
+                                <li>✓ Choose "➕ Add Custom" for others</li>
+                                <li>✓ Enter accurate marks for better recommendations</li>
+                                <li>✓ You can edit or delete entries anytime</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-modern alert-warning mb-3">
+                                <strong>🎯 Pro Tip:</strong><br>
+                                Add custom subjects like Philosophy, Statistics, etc. that aren't in the default list.
+                            </div>
+                            <div class="alert alert-modern alert-info mb-0">
+                                <strong>⏭️ Skip This Step:</strong><br>
+                                Click "Finish & Continue" to proceed to the career assessment survey without adding marks.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Stats & Progress -->
+        <div class="col-lg-4">
+            <!-- Quick Stats Card -->
+            <div class="modern-card mb-4">
+                <div class="card-header-success">
+                    <h5 class="mb-0">📊 Quick Stats</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-value">{{ marks_data|length }}</div>
+                                <div class="stat-label">Subjects</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-value">
+                                    {% if marks_data %}
+                                        {% set total_percentage = marks_data | sum(attribute='percentage') %}
+                                        {% set avg_percentage = total_percentage / marks_data|length %}
+                                        {{ "%.1f"|format(avg_percentage) }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </div>
+                                <div class="stat-label">Average</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-value">
+                                    {% if marks_data %}
+                                        {% set total_marks = marks_data | sum(attribute='marks_scored') %}
+                                        {{ total_marks|int }}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </div>
+                                <div class="stat-label">Total Marks</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-value">
+                                    {% if marks_data %}
+                                        {% set a_plus_count = marks_data | selectattr('percentage', '>=', 75) | list | length %}
+                                        {{ a_plus_count }}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </div>
+                                <div class="stat-label">A+ Grades</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Card -->
+            <div class="modern-card">
+                <div class="card-header-warning">
+                    <h5 class="mb-0">🎯 Completion Status</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="progress progress-modern mb-3">
+                        <div class="progress-bar progress-bar-gradient" role="progressbar" 
+                             style="width: {% if marks_data %}100{% else %}0{% endif %}%;" 
+                             aria-valuenow="{% if marks_data %}100{% else %}0{% endif %}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                            {% if marks_data %}✓ Complete{% else %}0%{% endif %}
+                        </div>
+                    </div>
+                    <div class="text-center mb-3">
+                        <span class="badge {% if marks_data %}bg-success{% else %}bg-warning{% endif %} fs-6">
+                            {% if marks_data %}
+                                ✓ Ready to Continue
+                            {% else %}
+                                ⏭️ Skip or Add Marks
+                            {% endif %}
+                        </span>
+                    </div>
+                    <p class="mb-0 text-muted text-center small">
+                        {% if marks_data %}
+                            Great! You can now proceed to the RIASEC career assessment.
+                        {% else %}
+                            You can skip this step or add marks for better recommendations.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marks Summary Section -->
+    {% if marks_data %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="card-header-gradient">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">📋 Your Marks Summary</h5>
+                        <button class="btn btn-light btn-sm" onclick="exportToCSV()">
+                            ⬇️ Download CSV
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Summary Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="summary-card border-primary text-center p-3">
+                                <h2 class="text-primary mb-2">{{ marks_data|length }}</h2>
+                                <small class="text-muted text-uppercase fw-bold">Subjects Added</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="summary-card border-success text-center p-3">
+                                <h2 class="text-success mb-2">
+                                    {% set total_percentage = marks_data | sum(attribute='percentage') %}
+                                    {% set avg_percentage = total_percentage / marks_data|length %}
+                                    {{ "%.1f"|format(avg_percentage) }}%
+                                </h2>
+                                <small class="text-muted text-uppercase fw-bold">Average %</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="summary-card border-warning text-center p-3">
+                                <h2 class="text-warning mb-2">
+                                    {% set max_percentage = marks_data | map(attribute='percentage') | max %}
+                                    {{ "%.1f"|format(max_percentage) }}%
+                                </h2>
+                                <small class="text-muted text-uppercase fw-bold">Highest Score</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="summary-card border-info text-center p-3">
+                                <h2 class="text-info mb-2">
+                                    {% set total_marks = marks_data | sum(attribute='marks_scored') %}
+                                    {{ total_marks|int }}
+                                </h2>
+                                <small class="text-muted text-uppercase fw-bold">Total Marks</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Table -->
+                    <div class="table-responsive">
+                        <table class="table table-modern table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Marks Scored</th>
+                                    <th>Total Marks</th>
+                                    <th>Percentage</th>
+                                    <th>Grade</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mark in marks_data %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ mark.subject }}</strong>
+                                        {% if mark.timestamp %}
+                                        <br><small class="text-muted">{{ mark.timestamp[:10] }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ "%.1f"|format(mark.marks_scored) }}</strong></td>
+                                    <td>{{ "%.1f"|format(mark.total_marks) }}</td>
+                                    <td>
+                                        {% set percentage = mark.percentage | float %}
+                                        {% if percentage >= 75 %}
+                                            <span class="badge bg-success fs-6">{{ "%.1f"|format(percentage) }}%</span>
+                                        {% elif percentage >= 50 %}
+                                            <span class="badge bg-warning fs-6">{{ "%.1f"|format(percentage) }}%</span>
+                                        {% else %}
+                                            <span class="badge bg-danger fs-6">{{ "%.1f"|format(percentage) }}%</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set percentage = mark.percentage | float %}
+                                        {% if percentage >= 90 %}
+                                            <span class="badge bg-success fs-6">A+</span>
+                                        {% elif percentage >= 80 %}
+                                            <span class="badge bg-success fs-6">A</span>
+                                        {% elif percentage >= 70 %}
+                                            <span class="badge bg-primary fs-6">B+</span>
+                                        {% elif percentage >= 60 %}
+                                            <span class="badge bg-primary fs-6">B</span>
+                                        {% elif percentage >= 50 %}
+                                            <span class="badge bg-warning fs-6">C</span>
+                                        {% else %}
+                                            <span class="badge bg-danger fs-6">F</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-modern btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" 
+                                                    onclick="editMark('{{ mark.id }}', {{ mark.marks_scored }}, {{ mark.total_marks }})">
+                                                ✏️
+                                            </button>
+                                            <form method="POST" style="display: inline;">
+                                                <input type="hidden" name="mark_id" value="{{ mark.id }}">
+                                                <button type="submit" name="delete_mark" 
+                                                        class="btn btn-outline-danger" 
+                                                        onclick="return confirm('Delete marks for {{ mark.subject }}?')">
+                                                    🗑️
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="empty-state">
+                <div class="empty-state-icon">📚</div>
+                <h3 class="mb-3">No Marks Added Yet</h3>
+                <p class="text-muted mb-4">Start by adding your academic marks above, or skip this step to continue to the career assessment.</p>
+                <form method="POST" style="display: inline;">
+                    <button type="submit" name="finish" class="btn btn-success-gradient btn-lg btn-finish">
+                        ⏭️ Skip & Continue to Survey
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editMarkModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none;">
+            <div class="modal-header" style="background: var(--primary-gradient); color: white; border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title">✏️ Edit Marks</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="mark_id" id="edit_mark_id">
+                    <div class="mb-3">
+                        <label class="form-label">Marks Scored</label>
+                        <input type="number" class="form-control" name="marks_scored" id="edit_marks_scored" 
+                               min="0" step="0.1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total Marks</label>
+                        <input type="number" class="form-control" name="total_marks" id="edit_total_marks" 
+                               min="1" step="0.1" required>
+                    </div>
+                    <div class="percentage-preview">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>📊 New Percentage:</strong>
+                            <span id="edit_percentage" class="fs-4 fw-bold text-primary">0%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="update_mark" class="btn btn-gradient">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle custom subject selection
+document.getElementById('subject').addEventListener('change', function() {
+    const customContainer = document.getElementById('custom-subject-container');
+    const customInput = document.getElementById('custom_subject');
+    
+    if (this.value === '➕ Add Custom Subject') {
+        customContainer.style.display = 'block';
+        customInput.required = true;
+        // Clear the subject select when showing custom input
+        this.value = '';
+    } else {
+        customContainer.style.display = 'none';
+        customInput.required = false;
+        customInput.value = '';
+    }
+});
+
+// Calculate percentage in real-time for add form
+function calculatePercentage() {
+    const marksScored = parseFloat(document.getElementById('marks_scored').value) || 0;
+    const totalMarks = parseFloat(document.getElementById('total_marks').value) || 100;
+    const preview = document.getElementById('percentage-preview');
+    const value = document.getElementById('percentage-value');
+    
+    if (marksScored > 0 && totalMarks > 0) {
+        const percentage = (marksScored / totalMarks) * 100;
+        value.textContent = percentage.toFixed(2) + '%';
+        preview.style.display = 'block';
+        
+        // Validate marks don't exceed total
+        if (marksScored > totalMarks) {
+            preview.className = 'percentage-preview border-danger';
+            value.textContent = '⚠️ Marks cannot exceed total!';
+            value.className = 'fs-4 fw-bold text-danger';
+        } else {
+            preview.className = 'percentage-preview';
+            value.className = 'fs-4 fw-bold text-primary';
+        }
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+// Calculate percentage for edit modal
+function calculateEditPercentage() {
+    const marksScored = parseFloat(document.getElementById('edit_marks_scored').value) || 0;
+    const totalMarks = parseFloat(document.getElementById('edit_total_marks').value) || 100;
+    const value = document.getElementById('edit_percentage');
+    
+    if (marksScored > 0 && totalMarks > 0) {
+        const percentage = (marksScored / totalMarks) * 100;
+        
+        if (marksScored > totalMarks) {
+            value.textContent = '⚠️ Invalid!';
+            value.className = 'fs-4 fw-bold text-danger';
+        } else {
+            value.textContent = percentage.toFixed(2) + '%';
+            value.className = 'fs-4 fw-bold text-success';
+        }
+    } else {
+        value.textContent = '0%';
+        value.className = 'fs-4 fw-bold text-muted';
+    }
+}
+
+// Edit mark function
+function editMark(markId, marksScored, totalMarks) {
+    document.getElementById('edit_mark_id').value = markId;
+    document.getElementById('edit_marks_scored').value = marksScored;
+    document.getElementById('edit_total_marks').value = totalMarks;
+    calculateEditPercentage();
+    
+    const modal = new bootstrap.Modal(document.getElementById('editMarkModal'));
+    modal.show();
+}
+
+// Export to CSV
+function exportToCSV() {
+    const marks = [
+        {% for mark in marks_data %}
+        {
+            subject: "{{ mark.subject }}",
+            marks_scored: {{ mark.marks_scored }},
+            total_marks: {{ mark.total_marks }},
+            percentage: {{ mark.percentage }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    if (marks.length === 0) {
+        alert('No marks to export!');
+        return;
+    }
+    
+    let csv = 'Subject,Marks Scored,Total Marks,Percentage,Grade\n';
+    
+    marks.forEach(mark => {
+        const percentage = mark.percentage;
+        let grade = 'F';
+        if (percentage >= 90) grade = 'A+';
+        else if (percentage >= 80) grade = 'A';
+        else if (percentage >= 70) grade = 'B+';
+        else if (percentage >= 60) grade = 'B';
+        else if (percentage >= 50) grade = 'C';
+        
+        csv += `"${mark.subject}",${mark.marks_scored.toFixed(1)},${mark.total_marks.toFixed(1)},${percentage.toFixed(2)}%,${grade}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'my_academic_marks.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+// Event listeners
+const marksScored = document.getElementById('marks_scored');
+const totalMarks = document.getElementById('total_marks');
+const editMarksScored = document.getElementById('edit_marks_scored');
+const editTotalMarks = document.getElementById('edit_total_marks');
+
+if (marksScored) marksScored.addEventListener('input', calculatePercentage);
+if (totalMarks) totalMarks.addEventListener('input', calculatePercentage);
+if (editMarksScored) editMarksScored.addEventListener('input', calculateEditPercentage);
+if (editTotalMarks) editTotalMarks.addEventListener('input', calculateEditPercentage);
+
+// Form validation
+(function() {
+    'use strict';
+    
+    // Bootstrap form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            // Check if it's the finish button
+            const isFinishButton = event.submitter && event.submitter.name === 'finish';
+            
+            // If it's finish button, allow submission without validation
+            if (isFinishButton) {
+                return true;
+            }
+            
+            // For add_marks button, validate the form
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    // Handle custom subject input
+    const subjectSelect = document.getElementById('subject');
+    const customSubjectInput = document.getElementById('custom_subject');
+    const customContainer = document.getElementById('custom-subject-container');
+    
+    // When form is submitted with add_marks, validate subject
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const isAddMarks = e.submitter && e.submitter.name === 'add_marks';
+            
+            if (isAddMarks) {
+                const subjectValue = subjectSelect.value;
+                const customValue = customSubjectInput.value.trim();
+                const isCustomShown = customContainer.style.display !== 'none';
+                
+                // If custom subject container is shown but no custom name entered
+                if (isCustomShown && !customValue) {
+                    e.preventDefault();
+                    alert('Please enter the custom subject name!');
+                    customSubjectInput.focus();
+                    return false;
+                }
+                
+                // If custom subject container is NOT shown and no subject selected
+                if (!isCustomShown && !subjectValue) {
+                    e.preventDefault();
+                    alert('Please select a subject!');
+                    subjectSelect.focus();
+                    return false;
+                }
+                
+                // If custom subject entered, use that as the subject value
+                if (isCustomShown && customValue) {
+                    // Remove the subject select requirement and use custom value
+                    subjectSelect.removeAttribute('required');
+                    
+                    // Create a hidden input for the actual subject name
+                    const existingHidden = form.querySelector('input[name="subject"][type="hidden"]');
+                    if (existingHidden) {
+                        existingHidden.value = customValue;
+                    } else {
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'subject';
+                        hiddenInput.value = customValue;
+                        form.appendChild(hiddenInput);
+                    }
+                }
+            }
+        });
+    });
+})();
+
+// Add smooth animations on load
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 50);
+        }, index * 100);
+    });
+
+    // Animate table rows
+    const tableRows = document.querySelectorAll('.table-modern tbody tr');
+    tableRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-20px)';
+        
+        setTimeout(() => {
+            row.style.transition = 'all 0.5s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateX(0)';
+        }, index * 50);
+    });
+});
+
+// Add ripple effect to buttons
+document.querySelectorAll('.btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.style.position = 'absolute';
+        ripple.style.borderRadius = '50%';
+        ripple.style.background = 'rgba(255, 255, 255, 0.5)';
+        ripple.style.transform = 'scale(0)';
+        ripple.style.animation = 'ripple 0.6s ease-out';
+        ripple.style.pointerEvents = 'none';
+        
+        this.style.position = 'relative';
+        this.style.overflow = 'hidden';
+        this.appendChild(ripple);
+        
+        setTimeout(() => ripple.remove(), 600);
+    });
+});
+
+// Add CSS for ripple animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

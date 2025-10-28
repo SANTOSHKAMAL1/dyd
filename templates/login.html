@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Jain University Course & Career Advisor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-30px) translateX(30px); }
+            50% { transform: translateY(-60px) translateX(-30px); }
+            75% { transform: translateY(-30px) translateX(30px); }
+        }
+
+        /* Container */
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: visible;
+            position: relative;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Robot Assistant */
+        .robot-container {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            z-index: 100;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .robot-container:hover {
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        .robot {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Robot Head */
+        .robot-head {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #efeef1, #1a0beb);
+            border-radius: 15px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            animation: robotBob 2s ease-in-out infinite;
+        }
+
+        @keyframes robotBob {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        
+
+        /* Robot Eyes */
+        .robot-eye {
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .robot-eye.left { left: 15px; }
+        .robot-eye.right { right: 15px; }
+
+        .robot-pupil {
+            width: 7px;
+            height: 7px;
+            background: #333;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        /* Robot Mouth */
+        .robot-mouth {
+            width: 30px;
+            height: 3px;
+            background: white;
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .robot-mouth.happy {
+            height: 15px;
+            border-radius: 0 0 15px 15px;
+            background: transparent;
+            border: 3px solid white;
+            border-top: none;
+        }
+
+       
+       
+
+        /* Speech Bubble */
+        .speech-bubble {
+            position: absolute;
+            background: white;
+            border-radius: 15px;
+            padding: 10px 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-size: 0.85rem;
+            max-width: 200px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            top: -60px;
+            left: 120px;
+            white-space: nowrap;
+        }
+
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            left: -10px;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 10px solid white;
+        }
+
+        .speech-bubble.show {
+            opacity: 1;
+        }
+
+        /* Card Body */
+        .card-body {
+            padding: 3rem 2.5rem 2.5rem;
+        }
+
+        .card-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+        .card-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        /* Form Tabs */
+        .form-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: #999;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+        }
+
+        .tab-button.active:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Form Elements */
+        .form-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            outline: none;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+
+        .toggle-password:hover {
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Alert */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(102, 126, 234, 0.95);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-robot {
+            font-size: 80px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .auth-container {
+                max-width: 100%;
+            }
+
+            .card-body {
+                padding: 2.5rem 1.5rem 2rem;
+            }
+
+            .speech-bubble {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <div class="bg-circle" style="width: 300px; height: 300px; top: -100px; left: -100px; animation-delay: 0s;"></div>
+        <div class="bg-circle" style="width: 200px; height: 200px; top: 50%; right: -50px; animation-delay: 2s;"></div>
+        <div class="bg-circle" style="width: 250px; height: 250px; bottom: -100px; left: 30%; animation-delay: 4s;"></div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-robot">🤖</div>
+        <div class="loading-text" id="loadingText">Processing...</div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Robot Assistant -->
+            <div class="robot-container" id="robotContainer">
+                <div class="speech-bubble" id="speechBubble">Hello! I'm here to help!</div>
+                <div class="robot">
+                    <div class="robot-head">
+                        <div class="antenna">
+                            <div class="antenna-ball"></div>
+                        </div>
+                        <div class="robot-eye left">
+                            <div class="robot-pupil" id="leftPupil"></div>
+                        </div>
+                        <div class="robot-eye right">
+                            <div class="robot-pupil" id="rightPupil"></div>
+                        </div>
+                        <div class="robot-mouth" id="robotMouth"></div>
+                    </div>
+                    <div class="robot-body"></div>
+                    <div class="robot-arm left"></div>
+                    <div class="robot-arm right"></div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <h2 class="card-title">Welcome to Jain University</h2>
+                <p class="card-subtitle">Course & Career Advisor</p>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Form Tabs -->
+                <div class="form-tabs">
+                    <button class="tab-button active" data-tab="login" id="loginTab">Login</button>
+                    <button class="tab-button" data-tab="register" id="registerTab">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <div class="tab-content active" id="loginContent">
+                    <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" id="loginUsername" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" class="form-control" name="password" id="loginPassword" required>
+                                <button type="button" class="toggle-password" data-target="loginPassword">
+                                    👁️
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div class="tab-content" id="registerContent">
+                    <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" id="registerUsername" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" id="registerEmail" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" class="form-control" name="password" id="registerPassword" required>
+                                <button type="button" class="toggle-password" data-target="registerPassword">
+                                    👁️
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Confirm Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" class="form-control" name="confirm_password" id="confirmPassword" required>
+                                <button type="button" class="toggle-password" data-target="confirmPassword">
+                                    👁️
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Elements
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginContent = document.getElementById('loginContent');
+        const registerContent = document.getElementById('registerContent');
+        const robotContainer = document.getElementById('robotContainer');
+        const speechBubble = document.getElementById('speechBubble');
+        const leftPupil = document.getElementById('leftPupil');
+        const rightPupil = document.getElementById('rightPupil');
+        const robotMouth = document.getElementById('robotMouth');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+
+        // Tab Switching
+        loginTab.addEventListener('click', () => switchTab('login'));
+        registerTab.addEventListener('click', () => switchTab('register'));
+
+        function switchTab(tab) {
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginContent.classList.add('active');
+                registerContent.classList.remove('active');
+                showSpeech('Welcome back! Please login.');
+            } else {
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+                registerContent.classList.add('active');
+                loginContent.classList.remove('active');
+                showSpeech('Create your account here!');
+            }
+        }
+
+        // Speech Bubble
+        function showSpeech(message, duration = 3000) {
+            speechBubble.textContent = message;
+            speechBubble.classList.add('show');
+            robotMouth.classList.add('happy');
+            
+            setTimeout(() => {
+                speechBubble.classList.remove('show');
+                robotMouth.classList.remove('happy');
+            }, duration);
+        }
+
+        // Robot eyes follow mouse
+        document.addEventListener('mousemove', (e) => {
+            const robotRect = robotContainer.getBoundingClientRect();
+            const robotCenterX = robotRect.left + robotRect.width / 2;
+            const robotCenterY = robotRect.top + 35;
+
+            const deltaX = e.clientX - robotCenterX;
+            const deltaY = e.clientY - robotCenterY;
+
+            const maxOffset = 3;
+            const pupilX = Math.max(-maxOffset, Math.min(maxOffset, deltaX / 30));
+            const pupilY = Math.max(-maxOffset, Math.min(maxOffset, deltaY / 30));
+
+            leftPupil.style.transform = `translate(${pupilX}px, ${pupilY}px)`;
+            rightPupil.style.transform = `translate(${pupilX}px, ${pupilY}px)`;
+        });
+
+        // Robot click
+        robotContainer.addEventListener('click', () => {
+            const messages = [
+                'Need help? Just ask!',
+                'I\'m here to assist you!',
+                'Welcome to Jain University!',
+                'Let\'s get you started!',
+                'Hello there! 👋'
+            ];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            showSpeech(randomMessage);
+        });
+
+        // Password Toggle
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    button.textContent = '🙈';
+                    showSpeech('I can see your password now!', 2000);
+                } else {
+                    input.type = 'password';
+                    button.textContent = '👁️';
+                    showSpeech('Password hidden!', 2000);
+                }
+            });
+        });
+
+        // Input Focus Events
+        const allInputs = document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"]');
+        
+        allInputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                if (input.name === 'username') {
+                    showSpeech('Enter your username', 2000);
+                } else if (input.name === 'password') {
+                    showSpeech('Enter your password', 2000);
+                } else if (input.name === 'email') {
+                    showSpeech('Your email address', 2000);
+                } else if (input.name === 'confirm_password') {
+                    showSpeech('Confirm your password', 2000);
+                }
+                robotMouth.classList.add('happy');
+            });
+
+            input.addEventListener('blur', () => {
+                robotMouth.classList.remove('happy');
+            });
+        });
+
+        // Form Submissions
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            loadingText.textContent = 'Logging you in...';
+            loadingOverlay.classList.add('active');
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                showSpeech('Passwords do not match!', 3000);
+                return;
+            }
+
+            loadingText.textContent = 'Creating your account...';
+            loadingOverlay.classList.add('active');
+        });
+
+        // Initial greeting
+        setTimeout(() => {
+            showSpeech('Hello! Welcome to Jain University!', 4000);
+        }, 500);
+    </script>
+</body>
+</html>

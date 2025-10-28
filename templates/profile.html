@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+{% block content %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Jain Design Your Degree</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .profile-container {
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        /* Cover Image Section */
+        .cover-section {
+            position: relative;
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px 15px 0 0;
+            overflow: hidden;
+        }
+
+        .cover-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cover-upload-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+
+        /* Profile Picture */
+        .profile-picture-section {
+            position: relative;
+            margin-top: -80px;
+            text-align: center;
+            z-index: 5;
+        }
+
+        .profile-picture {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 5px solid white;
+            object-fit: cover;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .profile-upload-btn {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Profile Content */
+        .profile-content {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            padding: 100px 30px 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .profile-header-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-header-info h2 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-header-info p {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-share {
+            background: #28a745;
+            color: white;
+            border: none;
+        }
+
+        .btn-share:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        /* Stats Cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        /* RIASEC Section */
+        .riasec-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .riasec-trait {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .riasec-trait-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: white;
+        }
+
+        .riasec-trait-info {
+            flex: 1;
+        }
+
+        .riasec-trait-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .riasec-trait-score {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        /* Marks Table */
+        .marks-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .marks-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .marks-table td {
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .marks-table tr td:first-child {
+            border-left: 1px solid #dee2e6;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .marks-table tr td:last-child {
+            border-right: 1px solid #dee2e6;
+            border-radius: 0 10px 10px 0;
+        }
+
+        /* Edit Form */
+        .edit-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        /* Share Modal */
+        .share-link-input {
+            background: #f8f9fa;
+            border: 2px dashed #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        /* PDF-specific styles */
+        .pdf-content {
+            display: none;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .pdf-content {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <!-- Cover and Profile Picture Section -->
+        <div class="cover-section" id="coverSection">
+            <img id="coverImage" class="cover-image" style="display: none;" alt="Cover">
+            <button class="btn btn-light cover-upload-btn no-print" onclick="document.getElementById('coverInput').click()">
+                <i class="fas fa-camera"></i> Change Cover
+            </button>
+            <input type="file" id="coverInput" accept="image/*" style="display: none;" onchange="uploadCover(event)">
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-picture-section">
+                <img id="profileImage" class="profile-picture" src="https://via.placeholder.com/160?text={{ profile.display_name[0] if profile.display_name else 'U' }}" alt="Profile">
+                <button class="btn btn-sm btn-primary profile-upload-btn no-print" onclick="document.getElementById('profileInput').click()">
+                    <i class="fas fa-camera"></i>
+                </button>
+                <input type="file" id="profileInput" accept="image/*" style="display: none;" onchange="uploadProfile(event)">
+            </div>
+
+            <!-- Profile Header Info -->
+            <div class="profile-header-info">
+                <h2>{{ profile.display_name or session.username }}</h2>
+                <p><i class="fas fa-envelope"></i> {{ profile.email or 'Not provided' }}</p>
+                <p><i class="fas fa-map-marker-alt"></i> {{ profile.location or 'Location not set' }}</p>
+                {% if profile.bio %}
+                <p class="text-muted">{{ profile.bio }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons no-print">
+                <button class="btn btn-action btn-download" onclick="downloadPDF()">
+                    <i class="fas fa-download"></i> Download Profile
+                </button>
+                <button class="btn btn-action btn-share" onclick="shareProfile()">
+                    <i class="fas fa-share-alt"></i> Share Profile
+                </button>
+                <button class="btn btn-action btn-secondary" onclick="toggleEdit()">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </button>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #667eea;">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-value">{{ "%.1f"|format(marks_data|sum(attribute='percentage')/marks_data|length if marks_data else 0) }}%</div>
+                    <div class="stat-label">Overall Average</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #28a745;">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-value">{{ marks_data|length }}</div>
+                    <div class="stat-label">Subjects</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #ffc107;">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-value">{{ riasec_data.top3|length if riasec_data else 0 }}</div>
+                    <div class="stat-label">Top Traits</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #dc3545;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value">{{ "%.0f"|format(profile.marks_completed|int * 50 + profile.riasec_completed|int * 50) }}%</div>
+                    <div class="stat-label">Profile Complete</div>
+                </div>
+            </div>
+
+            <!-- RIASEC Results Section -->
+            {% if riasec_data %}
+            <div class="riasec-section">
+                <h4 class="mb-4"><i class="fas fa-brain"></i> Career Personality (RIASEC)</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Top 3 Traits:</h6>
+                        {% for trait in riasec_data.top3 %}
+                        <div class="riasec-trait">
+                            <div class="riasec-trait-icon" style="background: {% if loop.index == 1 %}#667eea{% elif loop.index == 2 %}#764ba2{% else %}#3498db{% endif %};">
+                                {% if trait == 'R' %}<i class="fas fa-tools"></i>
+                                {% elif trait == 'I' %}<i class="fas fa-flask"></i>
+                                {% elif trait == 'A' %}<i class="fas fa-palette"></i>
+                                {% elif trait == 'S' %}<i class="fas fa-users"></i>
+                                {% elif trait == 'E' %}<i class="fas fa-bullhorn"></i>
+                                {% elif trait == 'C' %}<i class="fas fa-clipboard-list"></i>
+                                {% endif %}
+                            </div>
+                            <div class="riasec-trait-info">
+                                <div class="riasec-trait-name">{{ get_trait_name(trait) }}</div>
+                                <div class="riasec-trait-score">{{ "%.1f"|format(riasec_data.scores[trait] * 100) }}%</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>All Scores:</h6>
+                        {% for trait, score in riasec_data.scores.items() %}
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>{{ get_trait_name(trait) }}</span>
+                                <span class="text-primary">{{ "%.1f"|format(score * 100) }}%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" style="width: {{ score * 100 }}%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Academic Marks Section -->
+            <div class="riasec-section">
+                <h4 class="mb-4"><i class="fas fa-chart-bar"></i> Academic Performance</h4>
+                {% if marks_data %}
+                <table class="marks-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Marks Obtained</th>
+                            <th>Total Marks</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mark in marks_data %}
+                        <tr>
+                            <td><strong>{{ mark.subject }}</strong></td>
+                            <td>{{ mark.marks_scored }}</td>
+                            <td>{{ mark.total_marks }}</td>
+                            <td>
+                                <span class="badge" style="background: {% if mark.percentage >= 80 %}#28a745{% elif mark.percentage >= 60 %}#ffc107{% else %}#dc3545{% endif %}; padding: 8px 15px; font-size: 1rem;">
+                                    {{ "%.2f"|format(mark.percentage) }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No marks data available.</p>
+                {% endif %}
+            </div>
+
+            <!-- Edit Section (Hidden by default) -->
+            <div class="edit-section no-print" id="editSection" style="display: none;">
+                <h4 class="mb-4"><i class="fas fa-edit"></i> Edit Profile</h4>
+                <form method="POST" action="{{ url_for('update_profile') }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Display Name</label>
+                            <input type="text" class="form-control" name="display_name" value="{{ profile.display_name or '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" value="{{ profile.email or '' }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" name="phone" value="{{ profile.phone or '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" name="location" value="{{ profile.location or '' }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-control" name="bio" rows="4">{{ profile.bio or '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleEdit()">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-share-alt"></i> Share Your Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Share this link to let others view your profile:</p>
+                    <div class="share-link-input" id="shareLink"></div>
+                    <button class="btn btn-primary mt-3 w-100" onclick="copyShareLink()">
+                        <i class="fas fa-copy"></i> Copy Link
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleEdit() {
+            const editSection = document.getElementById('editSection');
+            editSection.style.display = editSection.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function uploadProfile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profileImage').src = e.target.result;
+                    // Save to server
+                    saveImage('profile', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function uploadCover(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const coverImg = document.getElementById('coverImage');
+                    coverImg.src = e.target.result;
+                    coverImg.style.display = 'block';
+                    // Save to server
+                    saveImage('cover', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveImage(type, imageData) {
+            try {
+                const response = await fetch('/profile/upload-image', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({type: type, image: imageData})
+                });
+                const result = await response.json();
+                if (result.success) {
+                    console.log('Image saved successfully');
+                }
+            } catch (error) {
+                console.error('Error saving image:', error);
+            }
+        }
+
+        function downloadPDF() {
+            const element = document.querySelector('.profile-container');
+            const opt = {
+                margin: 10,
+                filename: '{{ session.username }}_profile.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function shareProfile() {
+            const shareLink = window.location.origin + '/public-profile/{{ session.username }}';
+            document.getElementById('shareLink').textContent = shareLink;
+            const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+            shareModal.show();
+        }
+
+        function copyShareLink() {
+            const shareLink = document.getElementById('shareLink').textContent;
+            navigator.clipboard.writeText(shareLink).then(() => {
+                alert('Link copied to clipboard!');
+            });
+        }
+
+        // Load saved images on page load
+        window.onload = async function() {
+            try {
+                const response = await fetch('/profile/get-images');
+                const data = await response.json();
+                if (data.profile_image) {
+                    document.getElementById('profileImage').src = data.profile_image;
+                }
+                if (data.cover_image) {
+                    const coverImg = document.getElementById('coverImage');
+                    coverImg.src = data.cover_image;
+                    coverImg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading images:', error);
+            }
+        };
+    </script>
+</body>
+</html>
+{% endblock %}
