@@ -1,15 +1,24 @@
+# Core build tools (prevent BackendUnavailable errors)
+setuptools>=68.0.0
+wheel>=0.41.0
+pip>=25.0
+
+# Flask and related
 Flask==2.3.3
 Flask-Session==0.4.0
 flask-cors==4.0.0
-
-neo4j==5.14.0
-python-dotenv==1.0.0
 werkzeug==2.3.7
 
+# Database + environment
+neo4j==5.14.0
+python-dotenv==1.0.0
+
+# Data science + utilities
 pandas==2.0.3
 numpy==1.24.3
 plotly==5.15.0
+pytz==2023.3
 
+# AI / NLP
 sentence-transformers==2.2.2
 mistralai==0.1.2
-pytz==2023.3
