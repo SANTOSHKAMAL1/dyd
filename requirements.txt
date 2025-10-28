@@ -24,7 +24,7 @@ sentence-transformers
 mistralai
 
 # Skip pyarrow entirely
-pyarrow==0.0.0
+pyarrow
 --only-binary=:all:
 pandas
 numpy
