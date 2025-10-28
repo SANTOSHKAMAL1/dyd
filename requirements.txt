@@ -13,7 +13,7 @@ Werkzeug>=2.3.4
 python-dotenv==1.0.1
 neo4j==5.14.0
 
-# Data tools (no pyarrow build)
+# Data tools (no Arrow, no build)
 numpy==1.26.4
 pandas==2.1.4
 plotly==5.15.0
@@ -22,3 +22,6 @@ pytz==2023.3
 # AI / NLP
 sentence-transformers==2.2.2
 mistralai==0.1.2
+
+# Skip pyarrow entirely
+pyarrow==0.0.0
