@@ -25,3 +25,12 @@ mistralai==0.1.2
 
 # Skip pyarrow entirely
 pyarrow==0.0.0
+--only-binary=:all:
+pandas
+numpy
+Flask==3.0.3
+pandas==2.2.2
+numpy==1.26.4
+python-dotenv==1.0.1
+gunicorn==21.2.0
+requests
