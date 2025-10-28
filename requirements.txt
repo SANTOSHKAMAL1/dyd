@@ -1,4 +1,4 @@
-# Core build tools (prevent BackendUnavailable errors)
+# Core build tools (ensure modern wheel support)
 setuptools>=68.0.0
 wheel>=0.41.0
 pip>=25.0
@@ -14,8 +14,8 @@ neo4j==5.14.0
 python-dotenv==1.0.0
 
 # Data science + utilities
+numpy==1.26.4          # ✅ prebuilt wheels for all modern Python versions
 pandas==2.0.3
-numpy==1.24.3
 plotly==5.15.0
 pytz==2023.3
 
