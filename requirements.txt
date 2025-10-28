@@ -1,21 +1,21 @@
-# Core build tools (ensure modern wheel support)
+# Core build tools
 setuptools>=68.0.0
 wheel>=0.41.0
 pip>=25.0
 
-# Flask and related
+# Flask stack
 Flask==2.3.3
 Flask-Session==0.4.0
 flask-cors==4.0.0
-werkzeug==2.3.7
+Werkzeug>=2.3.4
 
-# Database + environment
+# Environment + Database
+python-dotenv==1.0.1
 neo4j==5.14.0
-python-dotenv==1.0.0
 
-# Data science + utilities
-numpy==1.26.4          # ✅ prebuilt wheels for all modern Python versions
-pandas==2.0.3
+# Data tools (compatible with Python 3.12/3.13)
+numpy==1.26.4
+pandas==2.2.3        # ✅ pandas 2.2.x works for Python 3.12+
 plotly==5.15.0
 pytz==2023.3
 
