@@ -206,7 +206,9 @@ pytz==2025.2
 
 pyvis==0.3.2
 
-PyWavelets==1.9.0
+numpy
+pywavelets
+
 
 pywin32==311
 
