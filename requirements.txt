@@ -210,7 +210,7 @@ numpy
 pywavelets
 
 
-pywin32==311
+
 
 PyYAML==6.0.2
 
