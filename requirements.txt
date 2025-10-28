@@ -210,7 +210,7 @@ numpy
 pywavelets
 
 
-PYTHON=3.12.3
+PYTHON
 
 
 PyYAML==6.0.2
