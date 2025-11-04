@@ -1,212 +1,1018 @@
 {% extends "base.html" %}
 
-{% block title %}Academic Assistant - Jain University{% endblock %}
+{% block title %}AI Assistant - Jain University{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row">
-        <div class="col-md-3">
-            <!-- Sidebar -->
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>System Status</h5>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: #0f0f0f;
+        color: #e0e0e0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container-fluid {
+        background-color: #0f0f0f;
+    }
+
+    .card {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+    }
+
+    .card-header {
+        background-color: #2b2b2b !important;
+        border-bottom: 1px solid #333;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .card-body {
+        background-color: #1a1a1a;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .bg-primary {
+        background-color: #0d6efd !important;
+    }
+
+    .bg-success {
+        background-color: #198754 !important;
+    }
+
+    .bg-info {
+        background-color: #0dcaf0 !important;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .text-white {
+        color: #f5f5f5 !important;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+    .badge.bg-success { background-color: #198754 !important; }
+    .badge.bg-danger { background-color: #dc3545 !important; }
+    .badge.bg-light { background-color: #2e2e2e !important; color: #0d6efd !important; }
+    .badge.bg-info { background-color: #0dcaf0 !important; color: #000 !important; }
+    .badge.bg-secondary { background-color: #6c757d !important; }
+    .badge.bg-primary { background-color: #0d6efd !important; }
+
+    .form-control {
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        color: #fff;
+        border-radius: 6px;
+        padding: 12px 15px;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        background-color: #333;
+        color: #fff;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .form-control::placeholder {
+        color: #888;
+    }
+
+    .btn {
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        transform: translateY(-2px);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    .btn-success {
+        background-color: #198754;
+        border: none;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: #157347;
+    }
+
+    .btn-outline-danger {
+        border: 1px solid #dc3545;
+        color: #dc3545;
+        background-color: transparent;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.875rem;
+    }
+
+    .btn-playlist {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-left: 5px;
+    }
+
+    .btn-playlist:hover {
+        background-color: #218838;
+        transform: scale(1.05);
+    }
+
+    .btn-playlist:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    small.text-muted {
+        color: #b0b0b0 !important;
+        font-size: 0.85rem;
+    }
+
+    .chat-container {
+        display: flex;
+        gap: 1.5rem;
+        height: calc(100vh - 100px);
+    }
+
+    .chat-sidebar {
+        width: 320px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    margin-bottom: 15px;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #333;
+    max-height: 70vh; /* Control height of message area */
+    scroll-behavior: smooth;
+}
+
+
+    .chat-input-area {
+        padding: 20px;
+        background-color: #1a1a1a;
+        border-top: 1px solid #333;
+        border-radius: 8px;
+    }
+
+    .assistant-message {
+        background-color: #2a2a2a;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 12px;
+        color: #e0e0e0;
+        border-left: 4px solid #0d6efd;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .user-message {
+        background-color: #0d6efd;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 12px;
+        color: #fff;
+        text-align: right;
+        border-left: 4px solid #0b5ed7;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        color: #888;
+        margin-top: 5px;
+    }
+
+    pre {
+        background-color: #151515 !important;
+        color: #dcdcdc !important;
+        border-radius: 10px;
+        padding: 15px;
+        font-size: 0.9rem;
+        overflow-x: auto;
+        border: 1px solid #333;
+    }
+
+    code {
+        background-color: #0d6efd;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+        font-weight: bold;
+        display: inline-block;
+    }
+
+    .alert {
+        border-radius: 8px;
+        border: 1px solid;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .alert-info {
+        background-color: #1e2f4d;
+        color: #a5c8ff;
+        border-color: #2d4c7c;
+    }
+
+    .alert-success {
+        background-color: #1a3a2e;
+        color: #7dffb8;
+        border-color: #2d5a42;
+    }
+
+    .alert-warning {
+        background-color: #3d2f1a;
+        color: #ffc764;
+        border-color: #5a4a2d;
+    }
+
+    .playlist-item {
+        background-color: #2a2a2a;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
+        border-left: 4px solid #28a745;
+        transition: all 0.3s ease;
+    }
+
+    .playlist-item:hover {
+        background-color: #333;
+        transform: translateX(4px);
+    }
+
+    .playlist-empty {
+        text-align: center;
+        color: #666;
+        padding: 20px;
+    }
+
+    .course-card {
+        background-color: #2a2a2a;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 4px solid #0d6efd;
+        transition: all 0.3s ease;
+    }
+
+    .course-card:hover {
+        background-color: #333;
+        transform: translateX(4px);
+    }
+
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .help-card {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .help-card ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .help-card li {
+        padding: 6px 0;
+        font-size: 0.9rem;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* SEMESTER INFO CARD */
+    .semester-info-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        color: white;
+        text-align: center;
+    }
+
+    .semester-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .semester-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    @media (max-width: 1200px) {
+        .chat-container {
+            flex-direction: column;
+            height: auto;
+        }
+
+        .chat-sidebar {
+            width: 100%;
+            max-height: 300px;
+            margin-bottom: 20px;
+            padding-right: 0;
+        }
+
+        .chat-messages {
+            height: 400px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .chat-container {
+            flex-direction: column;
+        }
+
+        .chat-sidebar {
+            width: 100%;
+            max-height: 250px;
+            margin-bottom: 15px;
+        }
+
+        .chat-messages {
+            height: 300px;
+        }
+
+        .container-fluid {
+            padding: 10px;
+        }
+
+        .chat-main {
+            padding: 0;
+        }
+
+        .card {
+            border-radius: 6px;
+        }
+
+        .course-card {
+            font-size: 0.9rem;
+        }
+    }
+
+    details summary {
+        color: #0d6efd;
+        cursor: pointer;
+        font-weight: bold;
+        user-select: none;
+    }
+
+    details summary:hover {
+        color: #0b5ed7;
+    }
+
+    details[open] summary {
+        margin-bottom: 10px;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #444;
+        border-top-color: #0d6efd;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+
+    .empty-state i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        opacity: 0.5;
+    }
+
+    .message-sender {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="chat-sidebar scrollbar-hide">
+            <!-- Current Semester Card -->
+            <div class="semester-info-card">
+                <div class="semester-number">{{ current_semester }}</div>
+                <div class="semester-label">Current Semester</div>
+                <small style="display: block; margin-top: 8px; opacity: 0.8;">
+                    👤 {{ display_name }}
+                </small>
+            </div>
+
+            <!-- Playlist Card -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bookmark me-2"></i>My Playlist
+                        <span class="badge bg-light text-success ms-2" id="playlist-count">0</span>
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <p><i class="fas fa-database me-2"></i>Neo4j: 
-                        <span class="badge bg-{{ 'success' if driver_connected else 'danger' }}">
-                            {{ 'Connected' if driver_connected else 'Disconnected' }}
-                        </span>
-                    </p>
-                    <p><i class="fas fa-brain me-2"></i>Mistral API: 
-                        <span class="badge bg-{{ 'success' if mistral_available else 'danger' }}">
-                            {{ 'Available' if mistral_available else 'Not Available' }}
-                        </span>
-                    </p>
-                    <p><i class="fas fa-code me-2"></i>Embeddings: 
-                        <span class="badge bg-{{ 'success' if embeddings_available else 'danger' }}">
-                            {{ 'Available' if embeddings_available else 'Not Available' }}
-                        </span>
-                    </p>
+                    <div id="playlist-sidebar" style="max-height: 300px; overflow-y: auto;">
+                        <div class="playlist-empty">
+                            <i class="fas fa-folder-open"></i>
+                            <p class="mt-2 mb-0">No courses yet</p>
+                            <small>Add courses from chat</small>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card mt-3">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Ask me about:</h5>
+            <!-- Help Card -->
+            <div class="card mb-3">
+                <div class="card-header bg-info text-dark">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Ask about:</h5>
                 </div>
                 <div class="card-body">
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-book me-2"></i>Courses at Jain University</li>
-                        <li><i class="fas fa-briefcase me-2"></i>Career opportunities</li>
-                        <li><i class="fas fa-list-check me-2"></i>Course prerequisites</li>
-                        <li><i class="fas fa-chart-line me-2"></i>Job market insights</li>
-                        <li><i class="fas fa-skills me-2"></i>Skill requirements</li>
-                    </ul>
+                    <div class="help-card">
+                        <ul>
+                            <li><i class="fas fa-book me-2 text-info"></i>Courses & programs</li>
+                            <li><i class="fas fa-briefcase me-2 text-info"></i>Career opportunities</li>
+                            <li><i class="fas fa-list-check me-2 text-info"></i>Prerequisites & paths</li>
+                            <li><i class="fas fa-chart-line me-2 text-info"></i>Market insights</li>
+                            <li><i class="fas fa-robot me-2 text-info"></i>AI & ML courses</li>
+                            <li><i class="fas fa-graduation-cap me-2 text-info"></i>Study planning</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
-            <button id="clear-chat" class="btn btn-outline-danger w-100 mt-3">
-                <i class="fas fa-trash me-2"></i>Clear Chat History
+            <!-- Clear Chat -->
+            <button id="clear-chat" class="btn btn-outline-danger w-100">
+                <i class="fas fa-trash me-2"></i>Clear Chat
             </button>
         </div>
 
-        <div class="col-md-9">
-            <!-- Chat Interface -->
-            <div class="card">
+        <!-- Main Chat -->
+        <div class="chat-main">
+            <div class="card flex-grow-1 d-flex flex-column">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="fas fa-robot me-2"></i>Career & Course Assistant</h4>
-                    <span class="badge bg-light text-primary">AI Powered</span>
+                    <h4 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>Career & Course Assistant
+                    </h4>
+                    <span class="badge bg-light text-primary">
+                        <i class="fas fa-sparkles me-1"></i>AI Powered
+                    </span>
                 </div>
-                <div class="card-body">
-                    <!-- Chat Messages -->
-                    <div id="chat-messages" style="height: 500px; overflow-y: auto; padding: 20px;">
-                        {% for msg in chat_messages %}
-                            <div class="chat-message {{ 'user-message' if msg.role == 'user' else 'assistant-message' }}">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <strong>{{ 'You' if msg.role == 'user' else 'Assistant' }}</strong>
-                                    <small class="text-muted">
-                                        {% if msg.timestamp %}
-                                            {{ msg.timestamp.strftime('%I:%M %p') }}
-                                        {% endif %}
-                                    </small>
-                                </div>
-                                <div class="mt-2">
-                                    {% if msg.is_code %}
-                                        <pre class="bg-dark text-light p-3 rounded"><code>{{ msg.content }}</code></pre>
-                                    {% else %}
-                                        {{ msg.content|safe }}
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
 
-                    <!-- Chat Input -->
-                    <div class="mt-3">
-                        <div class="input-group">
-                            <input type="text" id="chat-input" class="form-control" 
-                                   placeholder="Ask me anything about courses, careers, or your degree path..." 
-                                   autocomplete="off">
-                            <button id="send-btn" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
+                <!-- Chat Messages -->
+                <div class="card-body chat-messages" id="chat-messages">
+                    {% if chat_messages and chat_messages|length > 0 %}
+                        <!-- Load existing chat history -->
+                        {% for msg in chat_messages %}
+                            {% if msg.get('is_code') %}
+                                <div class="assistant-message">
+                                    <div class="message-sender">
+                                        <i class="fas fa-robot text-warning"></i>
+                                        <strong>Assistant</strong>
+                                        <span class="badge bg-light text-primary" style="margin-left: auto;">
+                                            {{ msg.timestamp.strftime('%I:%M %p') if msg.timestamp else 'Just now' }}
+                                        </span>
+                                    </div>
+                                    <details class="mb-3">
+                                        <summary><i class="fas fa-sitemap me-1"></i> View Learning Path</summary>
+                                        <pre class="mt-2 mb-0"><code>{{ msg.content }}</code></pre>
+                                    </details>
+                                </div>
+                            {% elif msg.role == 'user' %}
+                                <div class="user-message">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="message-sender">
+                                            <i class="fas fa-user-circle text-info"></i>
+                                            <strong>You</strong>
+                                        </div>
+                                        <span class="badge bg-light text-secondary">
+                                            {{ msg.timestamp.strftime('%I:%M %p') if msg.timestamp else 'Just now' }}
+                                        </span>
+                                    </div>
+                                    <div>{{ msg.content }}</div>
+                                </div>
+                            {% else %}
+                                <div class="assistant-message">
+                                    <div class="message-sender">
+                                        <i class="fas fa-robot text-warning"></i>
+                                        <strong>Assistant</strong>
+                                        <span class="badge bg-light text-primary" style="margin-left: auto;">
+                                            {{ msg.timestamp.strftime('%I:%M %p') if msg.timestamp else 'Just now' }}
+                                        </span>
+                                    </div>
+                                    <div style="margin-top: 10px; line-height: 1.6;">{{ msg.content|safe }}</div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <!-- Welcome message for new chat -->
+                        <div class="assistant-message">
+                            <div class="message-sender">
+                                <i class="fas fa-robot text-warning"></i>
+                                <strong>Assistant</strong>
+                                <span class="badge bg-light text-primary" style="margin-left: auto;">Just now</span>
+                            </div>
+                            <div style="margin-top: 10px; line-height: 1.6;">
+                                👋 Hello {{ display_name }}! I'm your AI-powered Course & Career Assistant at Jain University.
+                                <br><br>
+                                <strong>I can see you're in Semester {{ current_semester }}</strong> 📚
+                                <br><br>
+                                <strong>I can help you with:</strong>
+                                <ul style="margin: 10px 0; padding-left: 20px;">
+                                    <li>🤖 <strong>AI & Machine Learning</strong> course recommendations</li>
+                                    <li>📚 <strong>All courses</strong> at Jain University with details</li>
+                                    <li>📅 <strong>Semester planning</strong> and course selection</li>
+                                    <li>💳 <strong>Credit calculation</strong> and degree planning</li>
+                                    <li>🎯 <strong>Career path guidance</strong> based on your interests</li>
+                                    <li>📋 <strong>Prerequisites & dependencies</strong> for courses</li>
+                                </ul>
+                                <strong>What would you like to explore?</strong>
+                            </div>
                         </div>
+                    {% endif %}
+                </div>
+
+                <!-- Chat Input -->
+                <div class="chat-input-area">
+                    <div class="input-group">
+                        <input type="text" 
+                               id="chat-input" 
+                               class="form-control" 
+                               placeholder="Ask me about courses, careers, AI & ML paths, prerequisites..."
+                               autocomplete="off"
+                               spellcheck="true">
+                        <button id="send-btn" class="btn btn-primary" title="Send message (Enter)">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="fas fa-info-circle me-1"></i>Press Enter or click Send to message
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const chatInput = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('send-btn');
-    const chatMessages = document.getElementById('chat-messages');
-    const clearChatBtn = document.getElementById('clear-chat');
+// ============================================================================
+// GLOBAL STATE & INITIALIZATION
+// ============================================================================
 
-    function scrollToBottom() {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+const ChatApp = {
+    elements: {},
+    isLoading: false,
 
-    function addMessage(content, isUser = false, isCode = false) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `chat-message ${isUser ? 'user-message' : 'assistant-message'}`;
+    init() {
+        console.log("[INIT] Initializing Chat Application...");
         
-        const timestamp = new Date().toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true 
+        this.cacheElements();
+        this.setupEventListeners();
+        this.loadInitialData();
+        
+        console.log("[INIT] ✅ Application initialized successfully");
+    },
+
+    cacheElements() {
+        this.elements = {
+            chatInput: document.getElementById('chat-input'),
+            sendBtn: document.getElementById('send-btn'),
+            chatMessages: document.getElementById('chat-messages'),
+            clearBtn: document.getElementById('clear-chat'),
+            playlistSidebar: document.getElementById('playlist-sidebar'),
+            playlistCount: document.getElementById('playlist-count')
+        };
+        console.log("[CACHE] Elements cached:", Object.keys(this.elements));
+    },
+
+    setupEventListeners() {
+        const { chatInput, sendBtn, clearBtn } = this.elements;
+
+        sendBtn.addEventListener('click', () => this.sendMessage());
+        
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+            }
         });
 
-        messageDiv.innerHTML = `
-            <div class="d-flex justify-content-between align-items-start">
-                <strong>${isUser ? 'You' : 'Assistant'}</strong>
-                <small class="text-muted">${timestamp}</small>
-            </div>
-            <div class="mt-2">
-                ${isCode ? `<pre class="bg-dark text-light p-3 rounded"><code>${content}</code></pre>` : content}
-            </div>
-        `;
+        clearBtn.addEventListener('click', () => this.clearChat());
         
-        chatMessages.appendChild(messageDiv);
-        scrollToBottom();
-    }
+        console.log("[EVENTS] Event listeners attached");
+    },
 
-    async function sendMessage() {
-        const message = chatInput.value.trim();
-        if (!message) return;
-
-        // Add user message
-        addMessage(message, true);
-        chatInput.value = '';
-        sendBtn.disabled = true;
-
+    async loadInitialData() {
         try {
-            const response = await fetch('/chat/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: message })
-            });
-
-            const data = await response.json();
-
-            if (data.tree) {
-                addMessage(data.tree, false, true);
-            }
-
-            if (data.response) {
-                addMessage(data.response, false);
-            }
-
-            // Show search summary
-            if (data.courses_count > 0 || data.jobs_count > 0) {
-                const summary = document.createElement('div');
-                summary.className = 'alert alert-info mt-3';
-                summary.innerHTML = `
-                    <i class="fas fa-chart-bar me-2"></i>
-                    <strong>Search Results:</strong> ${data.courses_count} courses
-                    ${data.jobs_count > 0 ? `, ${data.jobs_count} job opportunities` : ''}
-                `;
-                chatMessages.appendChild(summary);
-                scrollToBottom();
-            }
-
-        } catch (error) {
-            addMessage('Sorry, I encountered an error. Please try again.', false);
-            console.error('Error:', error);
-        } finally {
-            sendBtn.disabled = false;
+            await this.loadPlaylist();
+            this.scrollToBottom();
+            console.log("[INITIAL] Data loaded, scrolled to bottom");
+        } catch (e) {
+            console.error("[ERROR] Loading initial data:", e);
         }
     }
+};
 
-    // Event listeners
-    sendBtn.addEventListener('click', sendMessage);
+// ============================================================================
+// MESSAGING FUNCTIONS
+// ============================================================================
+
+ChatApp.formatTime = function() {
+    return new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+};
+
+ChatApp.addMessage = function(content, isUser = false, isCode = false) {
+    console.log(`[MESSAGE] Adding ${isUser ? 'user' : 'assistant'} message`);
     
-    chatInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
+    const { chatMessages } = this.elements;
+    const div = document.createElement('div');
+    const messageClass = isUser ? 'user-message' : 'assistant-message';
+    const senderName = isUser ? 'You' : 'Assistant';
+    const senderIcon = isUser ? 'fas fa-user-circle text-info' : 'fas fa-robot text-warning';
+    const time = this.formatTime();
+
+    // Format content
+    content = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    let html = '';
+
+    if (isCode && /Prerequisites|[└├│]/.test(content)) {
+        // Tree/ASCII art
+        html = `
+            <details class="mb-3">
+                <summary><i class="fas fa-sitemap me-1"></i> View Learning Path</summary>
+                <pre class="mt-2 mb-0"><code>${content}</code></pre>
+            </details>
+        `;
+    } else if (isCode) {
+        // Code block
+        html = `<pre><code>${content}</code></pre>`;
+    } else {
+        // Regular message with course code detection
+        html = this.wrapCourseCodesWithButtons(content, isUser);
+    }
+
+    div.className = `${messageClass}`;
+    div.innerHTML = `
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="message-sender">
+                <i class="${senderIcon}"></i>
+                <strong>${senderName}</strong>
+            </div>
+            <span class="badge bg-light text-secondary">${time}</span>
+        </div>
+        <div>${html}</div>
+    `;
+
+    chatMessages.appendChild(div);
+
+    // Attach event listeners to playlist buttons
+    div.querySelectorAll('.btn-playlist').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const courseCode = btn.getAttribute('data-course');
+            this.addToPlaylist(courseCode);
+        });
     });
 
-    clearChatBtn.addEventListener('click', async function() {
-        if (confirm('Are you sure you want to clear all chat history?')) {
-            try {
-                await fetch('/chat/clear', { method: 'POST' });
-                chatMessages.innerHTML = '';
-                addMessage('Chat history cleared. How can I help you today?', false);
-            } catch (error) {
-                console.error('Error clearing chat:', error);
+    this.scrollToBottom();
+};
+
+ChatApp.wrapCourseCodesWithButtons = function(content, isUser = false) {
+    if (isUser) return content;
+
+    const courseCodeRegex = /\b([A-Z]{2,4}-\d{2,3})\b/g;
+    const matches = [...new Set(content.match(courseCodeRegex) || [])];
+
+    if (matches.length === 0) return content;
+
+    let wrappedContent = content;
+    matches.forEach(code => {
+        const regex = new RegExp(`\\b${code}\\b`, 'g');
+        const button = `
+            <button class="btn-playlist" data-course="${code}" title="Add to playlist">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        `;
+        wrappedContent = wrappedContent.replace(
+            regex,
+            `<code>${code}</code>${button}`
+        );
+    });
+
+    return wrappedContent;
+};
+
+ChatApp.scrollToBottom = function() {
+    const { chatMessages } = this.elements;
+    setTimeout(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 100);
+};
+
+ChatApp.showNotification = function(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} notification`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+        ${message}
+    `;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.remove(), 4000);
+};
+
+// ============================================================================
+// PLAYLIST MANAGEMENT
+// ============================================================================
+
+ChatApp.loadPlaylist = async function() {
+    console.log("[PLAYLIST] Loading...");
+    try {
+        const res = await fetch('/api/playlist', { credentials: 'same-origin' });
+
+        if (!res.ok) {
+            console.warn("[PLAYLIST] Failed to load:", res.status);
+            return;
+        }
+
+        const data = await res.json();
+        const { playlistSidebar, playlistCount } = this.elements;
+
+        playlistCount.textContent = data.count || 0;
+
+        if (!data.courses || data.courses.length === 0) {
+            playlistSidebar.innerHTML = `
+                <div class="playlist-empty">
+                    <i class="fas fa-folder-open"></i>
+                    <p class="mt-2 mb-0">No courses yet</p>
+                    <small>Add courses from chat</small>
+                </div>
+            `;
+        } else {
+            playlistSidebar.innerHTML = data.courses.map(course => `
+                <div class="playlist-item">
+                    <div>
+                        <strong>${course.course_code}</strong>
+                        <br>
+                        <small class="text-muted">${course.course_title || 'Course'}</small>
+                        <br>
+                        <small class="text-muted">${course.credits || 3} credits</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        console.log("[PLAYLIST] ✅ Loaded:", data.count, "courses");
+    } catch (e) {
+        console.error('[ERROR] Loading playlist:', e);
+    }
+};
+
+ChatApp.addToPlaylist = async function(courseCode) {
+    console.log(`[PLAYLIST] Adding ${courseCode}...`);
+
+    try {
+        const res = await fetch('/api/playlist/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ course_code: courseCode }),
+            credentials: 'same-origin'
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            this.showNotification(`✅ Added ${courseCode} to playlist!`, 'success');
+            await this.loadPlaylist();
+        } else {
+            this.showNotification(data.message || 'Failed to add course', 'warning');
+        }
+    } catch (e) {
+        console.error('[ERROR] Adding to playlist:', e);
+        this.showNotification('Error adding course', 'danger');
+    }
+};
+
+// ============================================================================
+// CHAT OPERATIONS
+// ============================================================================
+
+
+
+ChatApp.sendMessage = async function() {
+    const { chatInput } = this.elements;
+    const message = chatInput.value.trim();
+
+    if (!message) return;
+    if (this.isLoading) return;
+
+    console.log("[CHAT] Sending:", message.substring(0, 50) + "...");
+
+    this.addMessage(message, true);
+    chatInput.value = '';
+    this.isLoading = true;
+    this.elements.sendBtn.disabled = true;
+
+    try {
+        const res = await fetch('/chat/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message }),
+            credentials: 'same-origin'
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            console.log("[CHAT] ✅ Response received");
+
+            // Display tree if available
+            if (data.ascii_tree) {
+                this.addMessage(data.ascii_tree, false, true);
             }
-        }
-    });
 
-    // Scroll to bottom on load
-    scrollToBottom();
+            // Display main response
+            this.addMessage(data.response || "I couldn't generate a response.", false);
+
+            // Show summary
+            if (data.courses_count || data.jobs_count) {
+                const summary = `
+                    <div class="alert alert-info mt-2 mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Found: <strong>${data.courses_count || 0}</strong> courses
+                        ${data.jobs_count ? `, <strong>${data.jobs_count}</strong> job opportunities` : ''}
+                    </div>
+                `;
+                const div = document.createElement('div');
+                div.innerHTML = summary;
+                this.elements.chatMessages.appendChild(div);
+                this.scrollToBottom();
+            }
+        } else {
+            console.error("[CHAT] Error:", data);
+            this.addMessage("Sorry, I encountered an error. Please try again.", false);
+        }
+
+    } catch (e) {
+        console.error('[ERROR] Sending message:', e);
+        this.addMessage("Sorry, something went wrong. Please try again.", false);
+    } finally {
+        this.isLoading = false;
+        this.elements.sendBtn.disabled = false;
+        this.elements.chatInput.focus();
+    }
+};
+
+ChatApp.clearChat = async function() {
+    if (!confirm('Clear all chat messages? This cannot be undone.')) return;
+
+    console.log("[CHAT] Clearing...");
+
+    try {
+        const res = await fetch('/chat/clear', {
+            method: 'POST',
+            credentials: 'same-origin'
+        });
+
+        if (res.ok) {
+            console.log("[CHAT] ✅ Cleared");
+            
+            // Reset messages
+            this.elements.chatMessages.innerHTML = `
+                <div class="assistant-message">
+                    <div class="message-sender">
+                        <i class="fas fa-robot text-warning"></i>
+                        <strong>Assistant</strong>
+                        <span class="badge bg-light text-primary" style="margin-left: auto;">Just now</span>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        👋 Chat cleared! Ready for a new conversation. What would you like to know?
+                    </div>
+                </div>
+            `;
+            
+            this.scrollToBottom();
+            this.showNotification("✅ Chat history cleared", 'success');
+        } else {
+            this.showNotification("Failed to clear chat", 'danger');
+        }
+    } catch (e) {
+        console.error('[ERROR] Clearing chat:', e);
+        this.showNotification("Error clearing chat", 'danger');
+    }
+};
+
+// ============================================================================
+// PAGE INITIALIZATION
+// ============================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    ChatApp.init();
 });
 </script>
 {% endblock %}

@@ -1,0 +1,436 @@
+<!-- templates/admin_users.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            transition: all 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-3">
+                <h4 class="text-white mb-4">
+                    <i class="fas fa-user-shield me-2"></i>Admin Panel
+                </h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active rounded" href="{{ url_for('admin_users') }}">
+                            <i class="fas fa-users me-2"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_notifications') }}">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_analytics') }}">
+                            <i class="fas fa-chart-line me-2"></i>Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item mt-auto">
+                        <a class="nav-link rounded text-warning" href="{{ url_for('admin_logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-users me-2"></i>User Management</h2>
+                    <input type="text" id="searchInput" class="form-control w-25" placeholder="Search users...">
+                </div>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="usersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Display Name</th>
+                                        <th>Email</th>
+                                        <th>Marks</th>
+                                        <th>RIASEC</th>
+                                        <th>Messages</th>
+                                        <th>Joined</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td><strong>{{ user.username }}</strong></td>
+                                        <td>{{ user.display_name or '-' }}</td>
+                                        <td>{{ user.email or '-' }}</td>
+                                        <td>
+                                            {% if user.marks_completed %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> {{ user.marks_count }}
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-times"></i>
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.riasec_completed %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> Done
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-times"></i> Pending
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="badge bg-info">{{ user.messages_count }}</span></td>
+                                        <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</td>
+                                        <td>
+                                            <a href="{{ url_for('admin_user_detail', username=user.username) }}" 
+                                               class="btn btn-sm btn-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('public_profile', username=user.username) }}" 
+                                               class="btn btn-sm btn-secondary" title="Public Profile" target="_blank">
+                                                <i class="fas fa-user"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-danger" 
+                                                    onclick="confirmDelete('{{ user.username }}')" 
+                                                    title="Delete User">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirm Deletion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete user <strong id="deleteUsername"></strong>?</p>
+                    <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>This will permanently delete all their data including marks, RIASEC results, and chat history!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" id="deleteForm">
+                        <button type="submit" class="btn btn-danger">Delete User</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchValue) ? '' : 'none';
+            });
+        });
+        
+        // Delete confirmation
+        function confirmDelete(username) {
+            document.getElementById('deleteUsername').textContent = username;
+            document.getElementById('deleteForm').action = `/admin/user/${username}/delete`;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+</body>
+</html>
+
+
+<!-- templates/admin_user_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details - {{ username }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+        }
+        .section-card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-3">
+                <h4 class="text-white mb-4">
+                    <i class="fas fa-user-shield me-2"></i>Admin Panel
+                </h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active rounded" href="{{ url_for('admin_users') }}">
+                            <i class="fas fa-users me-2"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_notifications') }}">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_analytics') }}">
+                            <i class="fas fa-chart-line me-2"></i>Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item mt-auto">
+                        <a class="nav-link rounded text-warning" href="{{ url_for('admin_logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="mb-4">
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Users
+                    </a>
+                </div>
+                
+                <h2 class="mb-4">
+                    <i class="fas fa-user-circle me-2"></i>User Details: {{ username }}
+                </h2>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Profile Information -->
+                <div class="card section-card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-user me-2"></i>Profile Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Username:</strong> {{ profile.username }}</p>
+                                <p><strong>Display Name:</strong> {{ profile.display_name or 'Not set' }}</p>
+                                <p><strong>Email:</strong> {{ profile.email or 'Not set' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Phone:</strong> {{ profile.phone or 'Not set' }}</p>
+                                <p><strong>Location:</strong> {{ profile.location or 'Not set' }}</p>
+                                <p><strong>Bio:</strong> {{ profile.bio or 'Not set' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Academic Marks -->
+                <div class="card section-card shadow-sm">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Academic Marks</h5>
+                        <form method="POST" action="{{ url_for('admin_delete_user_marks', username=username) }}" 
+                              onsubmit="return confirm('Delete all marks for this user?')" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash me-1"></i>Delete All
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        {% if marks_data %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Marks Scored</th>
+                                        <th>Total Marks</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mark in marks_data %}
+                                    <tr>
+                                        <td>{{ mark.subject }}</td>
+                                        <td>{{ mark.marks_scored }}</td>
+                                        <td>{{ mark.total_marks }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if mark.percentage >= 75 else 'warning' if mark.percentage >= 50 else 'danger' }}">
+                                                {{ "%.2f"|format(mark.percentage) }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No marks entered yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- RIASEC Results -->
+                <div class="card section-card shadow-sm">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>RIASEC Assessment Results</h5>
+                        <form method="POST" action="{{ url_for('admin_delete_user_riasec', username=username) }}" 
+                              onsubmit="return confirm('Delete RIASEC results for this user?')" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash me-1"></i>Delete Results
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        {% if riasec_data %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Top 3 Traits:</h6>
+                                {% for trait in riasec_data.top3 %}
+                                <span class="badge bg-primary fs-6 me-2">
+                                    {{ loop.index }}. {{ get_trait_name(trait) }} ({{ trait }})
+                                </span>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <h6>All Scores:</h6>
+                                {% for trait, score in riasec_data.scores.items() %}
+                                <p class="mb-1">
+                                    <strong>{{ get_trait_name(trait) }}:</strong> 
+                                    {{ "%.1f"|format(score * 100) }}%
+                                </p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-muted mt-3">
+                            <small>Completed: {{ riasec_data.timestamp.strftime('%Y-%m-%d %H:%M') if riasec_data.timestamp else 'N/A' }}</small>
+                        </p>
+                        {% else %}
+                        <p class="text-muted">RIASEC assessment not completed yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Chat History -->
+                <div class="card section-card shadow-sm">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Chat History ({{ chat_history|length }} messages)</h5>
+                        <form method="POST" action="{{ url_for('admin_delete_user_chat', username=username) }}" 
+                              onsubmit="return confirm('Delete all chat messages for this user?')" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash me-1"></i>Clear Chat
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        {% if chat_history %}
+                        {% for msg in chat_history %}
+                        <div class="mb-3 p-2 rounded {{ 'bg-light' if msg.role == 'user' else 'bg-primary bg-opacity-10' }}">
+                            <strong class="{{ 'text-primary' if msg.role == 'user' else 'text-success' }}">
+                                {{ 'User' if msg.role == 'user' else 'Assistant' }}:
+                            </strong>
+                            <p class="mb-1">{{ msg.content }}</p>
+                            <small class="text-muted">{{ msg.timestamp.strftime('%Y-%m-%d %H:%M:%S') if msg.timestamp else 'N/A' }}</small>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-muted">No chat messages yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Danger Zone -->
+                <div class="card section-card shadow-sm border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Danger Zone</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-danger">Permanently delete this user and all their data. This action cannot be undone!</p>
+                        <form method="POST" action="{{ url_for('admin_delete_user', username=username) }}" 
+                              onsubmit="return confirm('Are you absolutely sure? This will delete ALL data for user: {{ username }}')">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-2"></i>Delete User Permanently
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

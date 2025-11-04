@@ -104,7 +104,7 @@
         .robot-head {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #efeef1, #1a0beb);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             border-radius: 15px;
             position: absolute;
             left: 50%;
@@ -118,8 +118,6 @@
             0%, 100% { transform: translateX(-50%) translateY(0); }
             50% { transform: translateX(-50%) translateY(-5px); }
         }
-
-        
 
         /* Robot Eyes */
         .robot-eye {
@@ -165,9 +163,6 @@
             border: 3px solid white;
             border-top: none;
         }
-
-       
-       
 
         /* Speech Bubble */
         .speech-bubble {
@@ -345,6 +340,49 @@
             }
         }
 
+        /* Admin Link */
+        .admin-access-link {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(30, 60, 114, 0.9);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: pulse-admin 2s ease-in-out infinite;
+        }
+
+        .admin-access-link:hover {
+            background: rgba(30, 60, 114, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            color: white;
+        }
+
+        @keyframes pulse-admin {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .admin-icon {
+            font-size: 1.2rem;
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         /* Loading Overlay */
         .loading-overlay {
             display: none;
@@ -394,6 +432,13 @@
             .speech-bubble {
                 display: none;
             }
+
+            .admin-access-link {
+                bottom: 10px;
+                right: 10px;
+                font-size: 0.85rem;
+                padding: 10px 16px;
+            }
         }
     </style>
 </head>
@@ -411,6 +456,12 @@
         <div class="loading-text" id="loadingText">Processing...</div>
     </div>
 
+    <!-- Admin Access Link -->
+    <a href="{{ url_for('admin_login') }}" class="admin-access-link" title="Admin Login">
+        <span class="admin-icon">🔐</span>
+        <span>Admin Access</span>
+    </a>
+
     <!-- Main Container -->
     <div class="auth-container">
         <div class="auth-card">
@@ -419,9 +470,6 @@
                 <div class="speech-bubble" id="speechBubble">Hello! I'm here to help!</div>
                 <div class="robot">
                     <div class="robot-head">
-                        <div class="antenna">
-                            <div class="antenna-ball"></div>
-                        </div>
                         <div class="robot-eye left">
                             <div class="robot-pupil" id="leftPupil"></div>
                         </div>
@@ -430,9 +478,6 @@
                         </div>
                         <div class="robot-mouth" id="robotMouth"></div>
                     </div>
-                    <div class="robot-body"></div>
-                    <div class="robot-arm left"></div>
-                    <div class="robot-arm right"></div>
                 </div>
             </div>
 

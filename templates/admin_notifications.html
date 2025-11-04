@@ -1,0 +1,430 @@
+<!-- templates/admin_notifications.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications Management - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            transition: all 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+        .notification-card {
+            transition: transform 0.2s;
+        }
+        .notification-card:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-3">
+                <h4 class="text-white mb-4">
+                    <i class="fas fa-user-shield me-2"></i>Admin Panel
+                </h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_users') }}">
+                            <i class="fas fa-users me-2"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active rounded" href="{{ url_for('admin_notifications') }}">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_analytics') }}">
+                            <i class="fas fa-chart-line me-2"></i>Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item mt-auto">
+                        <a class="nav-link rounded text-warning" href="{{ url_for('admin_logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-bell me-2"></i>Notifications Management</h2>
+                    <a href="{{ url_for('admin_create_notification') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create New Notification
+                    </a>
+                </div>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                {% if notifications %}
+                <div class="row">
+                    {% for notif in notifications %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card notification-card shadow-sm h-100">
+                            <div class="card-header bg-{{ 'danger' if notif.type == 'error' else 'warning' if notif.type == 'warning' else 'info' if notif.type == 'info' else 'primary' }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 text-white">
+                                        <i class="fas fa-{{ 'exclamation-circle' if notif.type == 'error' else 'exclamation-triangle' if notif.type == 'warning' else 'info-circle' if notif.type == 'info' else 'bell' }} me-2"></i>
+                                        {{ notif.title }}
+                                    </h6>
+                                    <span class="badge bg-white text-dark">{{ notif.type }}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ notif.message }}</p>
+                                
+                                {% if notif.file_path %}
+                                <div class="alert alert-light mb-2">
+                                    <i class="fas fa-paperclip me-2"></i>
+                                    <strong>Attachment:</strong> 
+                                    <a href="{{ url_for('static', filename=notif.file_path) }}" target="_blank" class="text-decoration-none">
+                                        {{ notif.file_name or 'Download File' }}
+                                    </a>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ notif.created_at.strftime('%Y-%m-%d %H:%M') if notif.created_at else 'N/A' }}
+                                    </small>
+                                    <form method="POST" action="{{ url_for('admin_delete_notification', notification_id=notif.id) }}" 
+                                          onsubmit="return confirm('Delete this notification?')" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                    <h4>No notifications yet</h4>
+                    <p class="text-muted">Create your first notification to reach all users!</p>
+                    <a href="{{ url_for('admin_create_notification') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create Notification
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+<!-- templates/admin_create_notification.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Notification - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+        }
+        .preview-card {
+            border: 2px dashed #dee2e6;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-3">
+                <h4 class="text-white mb-4">
+                    <i class="fas fa-user-shield me-2"></i>Admin Panel
+                </h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_users') }}">
+                            <i class="fas fa-users me-2"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active rounded" href="{{ url_for('admin_notifications') }}">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link rounded" href="{{ url_for('admin_analytics') }}">
+                            <i class="fas fa-chart-line me-2"></i>Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item mt-auto">
+                        <a class="nav-link rounded text-warning" href="{{ url_for('admin_logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="mb-4">
+                    <a href="{{ url_for('admin_notifications') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Notifications
+                    </a>
+                </div>
+                
+                <h2 class="mb-4"><i class="fas fa-plus-circle me-2"></i>Create New Notification</h2>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <form method="POST" enctype="multipart/form-data" id="notificationForm">
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Notification Title</strong> *</label>
+                                        <input type="text" name="title" class="form-control" 
+                                               placeholder="e.g., Important Update, New Course Available" 
+                                               id="notifTitle" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Message</strong> *</label>
+                                        <textarea name="message" class="form-control" rows="5" 
+                                                  placeholder="Enter your notification message here..." 
+                                                  id="notifMessage" required></textarea>
+                                        <small class="form-text text-muted">This message will be sent to all users.</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Type</strong></label>
+                                        <select name="type" class="form-select" id="notifType">
+                                            <option value="success">Success (Green)</option>
+                                            <option value="info" selected>Info (Blue)</option>
+                                            <option value="warning">Warning (Yellow)</option>
+                                            <option value="error">Error (Red)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Attachment (Optional)</strong></label>
+                                        <input type="file" name="file" class="form-control" id="notifFile"
+                                               accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif">
+                                        <small class="form-text text-muted">
+                                            Supported: PDF, Word, Images (PNG, JPG, GIF) - Max 16MB
+                                        </small>
+                                    </div>
+                                    
+                                    <div id="filePreview" class="mb-3" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-file me-2"></i>
+                                            <span id="fileName"></span>
+                                            <button type="button" class="btn-close float-end" onclick="clearFile()"></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-paper-plane me-2"></i>Send Notification to All Users
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card preview-card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Live Preview</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="previewNotif" class="alert alert-info">
+                                    <h6 id="previewTitle">Notification Title</h6>
+                                    <p id="previewMessage">Your notification message will appear here...</p>
+                                    <div id="previewFile" style="display: none;">
+                                        <hr>
+                                        <small><i class="fas fa-paperclip me-1"></i><span id="previewFileName">file.pdf</span></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h6><i class="fas fa-info-circle me-2"></i>Tips</h6>
+                                <ul class="small mb-0">
+                                    <li>Keep titles short and clear</li>
+                                    <li>Messages should be concise</li>
+                                    <li>Use appropriate notification type</li>
+                                    <li>Attachments are optional</li>
+                                    <li>All active users will receive this</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Live preview
+        document.getElementById('notifTitle').addEventListener('input', function() {
+            document.getElementById('previewTitle').textContent = this.value || 'Notification Title';
+        });
+        
+        document.getElementById('notifMessage').addEventListener('input', function() {
+            document.getElementById('previewMessage').textContent = this.value || 'Your notification message will appear here...';
+        });
+        
+        document.getElementById('notifType').addEventListener('change', function() {
+            const alert = document.getElementById('previewNotif');
+            alert.className = 'alert alert-' + this.value;
+        });
+        
+        document.getElementById('notifFile').addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('filePreview').style.display = 'block';
+                document.getElementById('previewFile').style.display = 'block';
+                document.getElementById('previewFileName').textContent = file.name;
+            }
+        });
+        
+        function clearFile() {
+            document.getElementById('notifFile').value = '';
+            document.getElementById('filePreview').style.display = 'none';
+            document.getElementById('previewFile').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+
+
+<!-- templates/user_notifications.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Jain University</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    {% include 'navbar.html' %}
+    
+    <div class="container mt-4">
+        <h2 class="mb-4"><i class="fas fa-bell me-2"></i>Notifications</h2>
+        
+        {% if notifications %}
+        <div class="row">
+            {% for notif in notifications %}
+            <div class="col-md-12 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title">
+                                    <i class="fas fa-{{ 'exclamation-circle' if notif.type == 'error' else 'exclamation-triangle' if notif.type == 'warning' else 'info-circle' if notif.type == 'info' else 'check-circle' }} 
+                                       text-{{ 'danger' if notif.type == 'error' else 'warning' if notif.type == 'warning' else 'info' if notif.type == 'info' else 'success' }} me-2"></i>
+                                    {{ notif.title }}
+                                </h5>
+                                <p class="card-text">{{ notif.message }}</p>
+                                
+                                {% if notif.file_path %}
+                                <div class="alert alert-light mt-2">
+                                    <i class="fas fa-paperclip me-2"></i>
+                                    <a href="{{ url_for('static', filename=notif.file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download me-1"></i>Download {{ notif.file_name or 'Attachment' }}
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <span class="badge bg-{{ 'danger' if notif.type == 'error' else 'warning' if notif.type == 'warning' else 'info' if notif.type == 'info' else 'success' }}">
+                                {{ notif.type }}
+                            </span>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>{{ notif.created_at.strftime('%B %d, %Y at %H:%M') if notif.created_at else 'N/A' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+            <h4>No notifications yet</h4>
+            <p class="text-muted">You'll see important updates here</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mark notifications as read when page loads
+        fetch('/api/notifications/mark-read', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+    </script>
+</body>
+</html>

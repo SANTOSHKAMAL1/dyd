@@ -15,6 +15,22 @@
             --jain-accent: #3498db;
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
             --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            
+            /* Light mode colors */
+            --bg-color: #F5F5F5;
+            --text-color: #333;
+            --card-bg: white;
+            --card-hover-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Dark mode colors */
+        body.dark-mode {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --card-hover-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            --jain-light: #1a1a1a;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
         }
 
         * {
@@ -25,8 +41,52 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--jain-light);
-            color: #333;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark Mode Toggle Button - Fixed Position */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--jain-blue) 0%, #1e3c72 100%);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .dark-mode-toggle i {
+            font-size: 24px;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .dark-mode-toggle:hover i {
+            transform: rotate(20deg);
+        }
+
+        /* Hide/show icons based on mode */
+        body.dark-mode .dark-mode-toggle .fa-moon {
+            display: none;
+        }
+
+        body:not(.dark-mode) .dark-mode-toggle .fa-sun {
+            display: none;
         }
 
         /* Header Styles - UPDATED with Scroll Effect */
@@ -44,6 +104,11 @@
             background-color: white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 10px 30px;
+        }
+
+        body.dark-mode header.scrolled {
+            background-color: #2d2d2d;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
         .header-container {
@@ -87,6 +152,10 @@
             font-weight: 700;
         }
 
+        body.dark-mode .logo-text h3 {
+            color: var(--jain-gold);
+        }
+
         /* NEW - AI Text Styling */
         .logo-text h3 .ai-text {
             color: #FFD700;
@@ -98,6 +167,10 @@
             font-size: 14px;
             color: #666;
             margin: 0;
+        }
+
+        body.dark-mode .logo-text p {
+            color: #aaa;
         }
 
         /* Navigation Wrapper */
@@ -128,6 +201,11 @@
             transition: all 0.3s ease;
         }
 
+        body.dark-mode .nav-links {
+            background: #2d2d2d;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
         header.scrolled .nav-links {
             box-shadow: none;
         }
@@ -145,9 +223,18 @@
             gap: 8px;
         }
 
+        body.dark-mode .nav-links a {
+            color: #e0e0e0;
+        }
+
         .nav-links a:hover {
             background-color: rgba(4, 4, 58, 0.08);
             color: var(--jain-blue);
+        }
+
+        body.dark-mode .nav-links a:hover {
+            background-color: rgba(255, 215, 0, 0.15);
+            color: var(--jain-gold);
         }
 
         .nav-links a i {
@@ -165,12 +252,15 @@
             color: rgb(10, 10, 10);
             font-weight: 600;
             padding: 10px 20px;
-            
             border-radius: 30px;
             font-size: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        body.dark-mode .username-display {
+            color: #e0e0e0;
         }
 
         .username-display i {
@@ -193,8 +283,12 @@
             font-size: 14px;
         }
 
+        body.dark-mode .logout-btn {
+            background-color: #3d3d3d !important;
+            color: #e0e0e0 !important;
+        }
+
         .logout-btn:hover {
-            
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
         }
@@ -212,41 +306,8 @@
             cursor: pointer;
         }
 
-        /* Hero Banner with Isometric Background */
-        
-        .hero-banner::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.1) 50%, transparent 70%);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .hero-banner h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .hero-banner p {
-            font-size: 1.2rem;
-            opacity: 0.95;
+        body.dark-mode .nav-toggle {
+            color: var(--jain-gold);
         }
 
         /* Main Container */
@@ -262,13 +323,13 @@
             border-radius: 10px;
             box-shadow: var(--shadow-sm);
             margin-bottom: 20px;
-            background: white;
+            background: var(--card-bg);
             transition: all 0.3s ease;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--card-hover-shadow);
         }
 
         .card-header {
@@ -282,13 +343,14 @@
 
         .card-body {
             padding: 20px;
+            color: var(--text-color);
         }
 
         /* Stat Cards */
         .stat-card {
             text-align: center;
             padding: 30px 20px;
-            background: white;
+            background: var(--card-bg);
             border-radius: 10px;
             box-shadow: var(--shadow-sm);
             transition: all 0.3s ease;
@@ -296,7 +358,7 @@
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--card-hover-shadow);
         }
 
         .stat-value {
@@ -306,10 +368,18 @@
             margin-bottom: 10px;
         }
 
+        body.dark-mode .stat-value {
+            color: var(--jain-gold);
+        }
+
         .stat-label {
             color: #666;
             font-size: 1rem;
             font-weight: 500;
+        }
+
+        body.dark-mode .stat-label {
+            color: #aaa;
         }
 
         /* Feature Cards */
@@ -318,7 +388,7 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: white;
+            background: var(--card-bg);
             border-radius: 10px;
             box-shadow: var(--shadow-sm);
             height: 100%;
@@ -326,7 +396,7 @@
 
         .feature-card:hover {
             transform: translateY(-10px);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--card-hover-shadow);
         }
 
         .feature-card i {
@@ -335,15 +405,27 @@
             margin-bottom: 15px;
         }
 
+        body.dark-mode .feature-card i {
+            color: var(--jain-gold);
+        }
+
         .feature-card h4 {
             color: var(--jain-blue);
             font-weight: 600;
             margin-bottom: 10px;
         }
 
+        body.dark-mode .feature-card h4 {
+            color: var(--jain-gold);
+        }
+
         .feature-card p {
             color: #666;
             font-size: 0.9rem;
+        }
+
+        body.dark-mode .feature-card p {
+            color: #aaa;
         }
 
         /* Button Styles */
@@ -382,9 +464,19 @@
             color: #155724;
         }
 
+        body.dark-mode .alert-success {
+            background-color: #1e4620;
+            color: #7ed387;
+        }
+
         .alert-danger {
             background-color: #f8d7da;
             color: #721c24;
+        }
+
+        body.dark-mode .alert-danger {
+            background-color: #4a1f23;
+            color: #f8b4b4;
         }
 
         .alert-warning {
@@ -392,9 +484,19 @@
             color: #856404;
         }
 
+        body.dark-mode .alert-warning {
+            background-color: #4a3f1a;
+            color: #ffd966;
+        }
+
         .alert-info {
             background-color: #d1ecf1;
             color: #0c5460;
+        }
+
+        body.dark-mode .alert-info {
+            background-color: #1a3d42;
+            color: #7dd3e0;
         }
 
         /* Footer */
@@ -472,6 +574,10 @@
                 box-shadow: 0 5px 10px rgba(0,0,0,0.1);
             }
 
+            body.dark-mode .nav-user-wrapper {
+                background-color: #2d2d2d;
+            }
+
             .nav-user-wrapper.show {
                 display: flex;
             }
@@ -503,14 +609,6 @@
                 display: block;
             }
 
-            .hero-banner h1 {
-                font-size: 1.8rem;
-            }
-
-            .hero-banner p {
-                font-size: 1rem;
-            }
-
             .footer-container {
                 grid-template-columns: 1fr;
             }
@@ -533,11 +631,28 @@
             header.scrolled .user-section {
                 display: none;
             }
+
+            .dark-mode-toggle {
+                width: 50px;
+                height: 50px;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .dark-mode-toggle i {
+                font-size: 20px;
+            }
         }
     </style>
     {% block extra_styles %}{% endblock %}
 </head>
 <body>
+    <!-- Dark Mode Toggle Button -->
+    <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+    </button>
+
     <!-- Header -->
     <header>
         <div class="header-container">
@@ -546,7 +661,7 @@
                      onerror="this.src='https://via.placeholder.com/60?text=JU';" 
                      alt="Jain University Logo">
                 <div class="logo-text">
-                    <h3>Jain University 
+                    <h3>Jain University</h3>
                     <p>Design Your Degree</p>
                 </div>
             </div>
@@ -598,8 +713,6 @@
     </header>
 
     {% if session.username %}
-  
-    
     {% endif %}
 
     <!-- Main Content -->
@@ -620,7 +733,6 @@
 
     <!-- Footer -->
     <footer>
-        
         <div class="copyright">
             &copy; 2025 Jain University. All Rights Reserved.
         </div>
@@ -654,6 +766,29 @@
                 }
 
                 lastScroll = currentScroll;
+            });
+
+            // Dark Mode Toggle
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.body;
+
+            // Check for saved dark mode preference
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                body.classList.add('dark-mode');
+            }
+
+            // Toggle dark mode
+            darkModeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                const isDark = body.classList.contains('dark-mode');
+                localStorage.setItem('darkMode', isDark);
+                
+                // Add a subtle animation
+                darkModeToggle.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    darkModeToggle.style.transform = 'scale(1)';
+                }, 200);
             });
         });
     </script>

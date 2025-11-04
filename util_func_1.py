@@ -1,5 +1,6 @@
 """
 Jain University Course & Career Advisor - Core Functions Module
+ENHANCED VERSION: Playlist, Semester, and Career Planning Features
 """
 
 import json
@@ -19,7 +20,21 @@ from utils_def_1 import (
     NEO4J_DATABASE
 )
 
-# Database Helper Functions
+# ============================================================================
+# COURSE PROPERTIES CONSTANTS
+# ============================================================================
+
+COURSE_PROPERTIES = [
+    'course_code', 'course_title', 'description', 'credits', 'level',
+    'department', 'semester', 'category', 'duration', 'instructor',
+    'subject_area', 'prereq_course_codes', 'course_riasec_vector',
+    'R', 'I', 'A', 'S', 'E', 'C', 'recommended_semester'
+]
+
+# ============================================================================
+# DATABASE HELPER FUNCTIONS
+# ============================================================================
+
 def save_chat_message(username, role, content, is_code=False):
     """Save a single chat message to Neo4j"""
     if not driver:
@@ -89,6 +104,10 @@ def clear_chat_history(username):
     except Exception as e:
         print(f"Failed to clear chat history: {e}")
 
+# ============================================================================
+# USER PROFILE FUNCTIONS
+# ============================================================================
+
 def get_user_profile(username):
     """Get complete user profile from Neo4j"""
     if not driver:
@@ -107,6 +126,7 @@ def get_user_profile(username):
                        u.phone AS phone,
                        u.profile_picture AS profile_picture,
                        u.created_at AS created_at,
+                       u.current_semester AS current_semester,
                        u.riasec_completed AS riasec_completed,
                        u.marks_completed AS marks_completed,
                        u.riasec_top3 AS top3,
@@ -132,12 +152,30 @@ def save_user_profile(username, field, value):
         print(f"Error saving profile: {e}")
         return False
 
+def save_user_semester(username, semester):
+    """Save user's current semester selection"""
+    if not driver:
+        return False
+    try:
+        with driver.session(database=NEO4J_DATABASE) as s:
+            s.run("""
+                MATCH (u:User {username: $username})
+                SET u.current_semester = $semester
+            """, username=username, semester=int(semester))
+        return True
+    except Exception as e:
+        print(f"Error saving semester: {e}")
+        return False
+
+# ============================================================================
+# MARKS MANAGEMENT FUNCTIONS
+# ============================================================================
+
 def save_marks(username, subject, marks_scored, total_marks):
     """Save marks to Neo4j"""
     if not driver:
         return False
     try:
-        # Check if subject already exists for this user
         with driver.session(database=NEO4J_DATABASE) as s:
             existing = s.run("""
                 MATCH (u:User {username: $username})-[:HAS_MARK]->(m:Mark {subject: $subject})
@@ -236,15 +274,17 @@ def update_marks_completed(username):
     except Exception as e:
         print(f"Error updating marks status: {e}")
 
-# RIASEC Functions
+# ============================================================================
+# RIASEC FUNCTIONS
+# ============================================================================
+
 def save_riasec_results(username, answers, riasec_results):
-    """Save complete RIASEC results to Neo4j without riasec_top3_scores"""
+    """Save complete RIASEC results to Neo4j"""
     if not driver:
         return False
     
     try:
         with driver.session(database=NEO4J_DATABASE) as s:
-            # Save all RIASEC data (without top3_scores)
             s.run("""
                 MATCH (u:User {username: $username})
                 SET u.riasec_answers = $answers,
@@ -267,7 +307,7 @@ def save_riasec_results(username, answers, riasec_results):
         return False
 
 def get_user_riasec_results(username):
-    """Get complete RIASEC results from Neo4j - handles missing properties gracefully"""
+    """Get complete RIASEC results from Neo4j"""
     if not driver:
         return None
     
@@ -285,7 +325,6 @@ def get_user_riasec_results(username):
             """, username=username).single()
             
             if result and result.get("completed"):
-                # Handle potential missing properties gracefully
                 scores_data = {}
                 if result["scores"]:
                     try:
@@ -315,7 +354,6 @@ def get_user_riasec_results(username):
 def calculate_riasec_scores(answers):
     """Calculate RIASEC scores from user answers"""
     
-    # Define RIASEC questions here so it's available in this module
     RIASEC_QUESTIONS = [
         ("I like to work on cars", "R"),
         ("I like to build things", "R"),
@@ -360,14 +398,12 @@ def calculate_riasec_scores(answers):
         ("I would like to work in an office", "C"),
     ]
     
-    # Count responses per trait
     trait_responses = {'R': [], 'I': [], 'A': [], 'S': [], 'E': [], 'C': []}
     
     for question, trait in RIASEC_QUESTIONS:
         response = answers.get(question, 0)
         trait_responses[trait].append(response)
     
-    # Calculate average score for each trait
     scores = {}
     for trait, responses in trait_responses.items():
         if responses:
@@ -375,13 +411,11 @@ def calculate_riasec_scores(answers):
         else:
             scores[trait] = 0.0
     
-    # Normalize scores to sum to 1
     total = sum(scores.values())
     if total > 0:
         for trait in scores:
             scores[trait] = scores[trait] / total
     
-    # Get top 3 traits
     top3 = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:3]
     
     return {
@@ -457,7 +491,10 @@ def get_riasec_trait_description(trait_code):
         'common_careers': []
     })
 
-# Memory Management System
+# ============================================================================
+# MEMORY MANAGEMENT SYSTEM
+# ============================================================================
+
 class SlidingWindowMemory:
     def __init__(self, recent_messages_count=6, max_context_tokens=1500):
         self.recent_messages_count = recent_messages_count
@@ -487,7 +524,6 @@ class SlidingWindowMemory:
             content = msg['content']
             content_lower = content.lower()
 
-            # Extract name
             if not profile['name']:
                 name_patterns = [
                     r'my name is (\w+)',
@@ -505,7 +541,6 @@ class SlidingWindowMemory:
                             profile['name'] = name.title()
                             break
 
-            # Extract interests with confidence
             interest_patterns = [
                 (r'interested in ([^.!?\n]+)', 0.9),
                 (r'want to learn (?:about )?([^.!?\n]+)', 0.8),
@@ -523,27 +558,37 @@ class SlidingWindowMemory:
                             confidence
                         )
 
-            # Extract course codes
             course_codes = re.findall(r'\b([A-Z]{2,4}[-\s]?\d{2,3})\b', content)
             for code in course_codes:
                 profile['mentioned_courses'].add(code.upper().replace(' ', '-'))
 
         return profile
 
-    def build_context(self, messages: List[Dict], current_query: str, client=None) -> str:
+    def build_context(self, messages: List[Dict], current_query: str, client=None, username=None) -> str:
         memory = self.initialize_memory()
         profile = self.extract_user_profile(messages)
 
         context_parts = []
         user_message_count = sum(1 for msg in messages if msg['role'] == 'user' and not msg.get('is_code'))
 
-        # Session status
+        # Add user's display name from profile
+        if username and driver:
+            try:
+                with driver.session(database=NEO4J_DATABASE) as s:
+                    result = s.run("""
+                        MATCH (u:User {username: $username})
+                        RETURN u.display_name AS display_name
+                    """, username=username).single()
+                    if result and result['display_name']:
+                        context_parts.append(f"USER NAME: {result['display_name']}")
+            except:
+                pass
+
         if user_message_count <= 1:
             context_parts.append("SESSION: First message")
         else:
             context_parts.append(f"SESSION: {user_message_count} messages so far")
 
-        # Student profile
         if profile['name'] or profile['interests'] or profile['career_goals']:
             profile_lines = ["STUDENT PROFILE:"]
             if profile['name']:
@@ -558,7 +603,6 @@ class SlidingWindowMemory:
 
             context_parts.append('\n'.join(profile_lines))
 
-        # Handle conversation history
         if len(messages) > self.recent_messages_count:
             recent_msgs = messages[-self.recent_messages_count:]
             if recent_msgs:
@@ -589,17 +633,588 @@ class SlidingWindowMemory:
 
         return '\n\n'.join(context_parts)
 
-# Semantic Search Functions
+# ============================================================================
+# PLAYLIST FUNCTIONS - ENHANCED WITH SEMESTER AND FULL DETAILS
+# ============================================================================
+
+def get_user_playlist(username, semester=None):
+    """Get all courses in user's playlist from Neo4j with full details and optional semester filter"""
+    if not driver:
+        return []
+    try:
+        with driver.session(database=NEO4J_DATABASE) as s:
+            if semester:
+                # Filter by semester
+                result = s.run("""
+                    MATCH (u:User {username: $username})-[:HAS_PLAYLIST]->(p:Playlist)-[:CONTAINS]->(c:Course)
+                    WHERE c.recommended_semester = $semester OR c.recommended_semester CONTAINS $sem_str
+                    RETURN c.course_code AS course_code,
+                           c.course_title AS course_title,
+                           c.subject_area AS subject_area,
+                           c.credits AS credits,
+                           c.level AS level,
+                           c.department AS department,
+                           c.description AS description,
+                           c.prereq_course_codes AS prerequisites,
+                           c.recommended_semester AS recommended_semester,
+                           c.category AS category,
+                           c.duration AS duration,
+                           c.instructor AS instructor,
+                           c.R AS R, c.I AS I, c.A AS A, c.S AS S, c.E AS E, c.C AS C,
+                           c.course_riasec_vector AS course_riasec_vector
+                    ORDER BY c.course_code
+                """, username=username, semester=int(semester), sem_str=str(semester))
+            else:
+                # Get all courses
+                result = s.run("""
+                    MATCH (u:User {username: $username})-[:HAS_PLAYLIST]->(p:Playlist)-[:CONTAINS]->(c:Course)
+                    RETURN c.course_code AS course_code,
+                           c.course_title AS course_title,
+                           c.subject_area AS subject_area,
+                           c.credits AS credits,
+                           c.level AS level,
+                           c.department AS department,
+                           c.description AS description,
+                           c.prereq_course_codes AS prerequisites,
+                           c.recommended_semester AS recommended_semester,
+                           c.category AS category,
+                           c.duration AS duration,
+                           c.instructor AS instructor,
+                           c.R AS R, c.I AS I, c.A AS A, c.S AS S, c.E AS E, c.C AS C,
+                           c.course_riasec_vector AS course_riasec_vector
+                    ORDER BY c.recommended_semester, c.course_code
+                """, username=username)
+            
+            courses = []
+            for record in result:
+                course_dict = dict(record)
+                courses.append(course_dict)
+            return courses
+    except Exception as e:
+        print(f"Error loading playlist: {e}")
+        return []
+
+def add_to_playlist(username, course_code):
+    """Add a course to user's playlist with all details"""
+    print("🔹 [START] add_to_playlist called")
+    print(f"🔹 Username: {username}, Course code: {course_code}")
+
+    if not driver:
+        print("❌ Neo4j driver not initialized")
+        return {"success": False, "message": "Database connection error"}
+
+    try:
+        playlist_id = f"{username}_playlist"
+        print(f"🔹 Computed playlist_id: {playlist_id}")
+
+        with driver.session(database=NEO4J_DATABASE) as s:
+            print("🔹 Checking if course exists...")
+            course_check = s.run("""
+                MATCH (c:Course {course_code: $course_code})
+                RETURN c.course_code AS code, 
+                       c.course_title AS title,
+                       c.credits AS credits,
+                       c.recommended_semester AS semester
+            """, course_code=course_code).single()
+
+            if not course_check:
+                print("❌ Course not found in Neo4j")
+                return {"success": False, "message": "Course not found"}
+            print(f"✅ Course found: {course_check['code']} - {course_check['title']}")
+
+            print("🔹 Checking if course already exists in playlist...")
+            already_exists = s.run("""
+                MATCH (u:User {username: $username})-[:HAS_PLAYLIST]->(p:Playlist)-[:CONTAINS]->(c:Course {course_code: $course_code})
+                RETURN c
+            """, username=username, course_code=course_code).single()
+
+            if already_exists:
+                print("⚠️ Course already exists in playlist")
+                return {"success": False, "message": "Course already in playlist"}
+
+            print("🔹 Creating/fetching playlist and linking course...")
+            s.run("""
+                MATCH (u:User {username: $username})
+                MATCH (c:Course {course_code: $course_code})
+                MERGE (p:Playlist {id: $playlist_id})
+                  ON CREATE SET p.name = $playlist_name, p.created_at = datetime()
+                MERGE (u)-[:HAS_PLAYLIST]->(p)
+                MERGE (p)-[:CONTAINS]->(c)
+            """, username=username, course_code=course_code,
+                 playlist_id=playlist_id, playlist_name="My Playlist")
+
+            print("✅ Course successfully added to playlist in Neo4j")
+
+            return {
+                "success": True,
+                "message": f"Added {course_code} to playlist",
+                "course_details": {
+                    "code": course_check['code'],
+                    "title": course_check['title'],
+                    "credits": course_check['credits'],
+                    "semester": course_check['semester']
+                }
+            }
+
+    except Exception as e:
+        print(f"❌ [ERROR] add_to_playlist: {e}")
+        return {"success": False, "message": f"Error: {str(e)}"}
+
+def remove_from_playlist(username, course_code):
+    """Remove a course from user's playlist"""
+    if not driver:
+        return {"success": False, "message": "Database connection error"}
+
+    try:
+        with driver.session(database=NEO4J_DATABASE) as s:
+            result = s.run("""
+                MATCH (u:User {username: $username})-[:HAS_PLAYLIST]->(p:Playlist)-[r:CONTAINS]->(c:Course {course_code: $course_code})
+                DELETE r
+                RETURN c.course_code AS code
+            """, username=username, course_code=course_code).single()
+
+            if result:
+                return {"success": True, "message": f"Removed {course_code} from playlist"}
+            else:
+                return {"success": False, "message": "Course not found in playlist"}
+    except Exception as e:
+        print(f"Error removing from playlist: {e}")
+        return {"success": False, "message": f"Error: {str(e)}"}
+
+def get_playlist_count(username):
+    """Get count of courses in user's playlist"""
+    if not driver:
+        return 0
+    try:
+        with driver.session(database=NEO4J_DATABASE) as s:
+            result = s.run("""
+                MATCH (u:User {username: $username})-[:HAS_PLAYLIST]->(p:Playlist)-[:CONTAINS]->(c:Course)
+                RETURN count(c) AS count
+            """, username=username).single()
+            return result['count'] if result else 0
+    except Exception as e:
+        print(f"Error getting playlist count: {e}")
+        return 0
+
+# ============================================================================
+# COURSE PROPERTY EXTRACTION & FORMATTING
+# ============================================================================
+
+def extract_all_course_properties(course_dict: Dict) -> Dict:
+    """Extract all course properties from Neo4j result with RIASEC data"""
+    extracted = {}
+    
+    # Basic course info
+    extracted['course_code'] = course_dict.get('course_code', 'N/A')
+    extracted['course_title'] = course_dict.get('course_title') or course_dict.get('title', 'N/A')
+    extracted['description'] = course_dict.get('description', 'No description available')
+    extracted['credits'] = course_dict.get('credits', 'N/A')
+    extracted['level'] = course_dict.get('level', 'Beginner')
+    extracted['department'] = course_dict.get('department', 'N/A')
+    extracted['semester'] = course_dict.get('recommended_semester') or course_dict.get('semester', 'Elective')
+    extracted['category'] = course_dict.get('category', 'ELECTIVE')
+    extracted['duration'] = course_dict.get('duration', 'N/A')
+    extracted['instructor'] = course_dict.get('instructor', 'TBD')
+    extracted['subject_area'] = course_dict.get('subject_area', 'N/A')
+    extracted['prerequisites'] = course_dict.get('prerequisites') or course_dict.get('prereq_course_codes', 'None')
+    
+    # RIASEC alignment scores
+    riasec_scores = {
+        'R': course_dict.get('R', 0.0),
+        'I': course_dict.get('I', 0.0),
+        'A': course_dict.get('A', 0.0),
+        'S': course_dict.get('S', 0.0),
+        'E': course_dict.get('E', 0.0),
+        'C': course_dict.get('C', 0.0)
+    }
+    extracted['riasec_alignment'] = riasec_scores
+    
+    # Course RIASEC vector
+    if course_dict.get('course_riasec_vector'):
+        vector = course_dict.get('course_riasec_vector', [])
+        extracted['riasec_vector'] = {
+            'R': vector[0] if len(vector) > 0 else 0,
+            'I': vector[1] if len(vector) > 1 else 0,
+            'A': vector[2] if len(vector) > 2 else 0,
+            'S': vector[3] if len(vector) > 3 else 0,
+            'E': vector[4] if len(vector) > 4 else 0,
+            'C': vector[5] if len(vector) > 5 else 0
+        }
+    
+    return extracted
+
+def format_course_for_display(course_dict: Dict, detailed=False) -> str:
+    """Format course data for human-readable display"""
+    props = extract_all_course_properties(course_dict)
+    
+    if detailed:
+        # Full detailed view
+        lines = [
+            f"📚 **{props['course_code']}: {props['course_title']}**",
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"📝 **Description:** {props['description']}",
+            f"📊 **Credits:** {props['credits']}",
+            f"🎓 **Level:** {props['level']}",
+            f"🏢 **Department:** {props['department']}",
+            f"📅 **Semester:** {props['semester']}",
+            f"🏷️  **Category:** {props['category']}",
+            f"⏱️  **Duration:** {props['duration']}",
+            f"👨‍🏫 **Instructor:** {props['instructor']}",
+            f"📍 **Subject Area:** {props['subject_area']}",
+            f"📋 **Prerequisites:** {props['prerequisites'] if props['prerequisites'] != 'None' else 'None - Foundation course'}",
+        ]
+        
+        # Add RIASEC alignment
+        riasec = props.get('riasec_alignment', {})
+        if any(riasec.values()):
+            lines.append("🎯 **Career Personality Alignment:**")
+            trait_names = {'R': 'Realistic', 'I': 'Investigative', 'A': 'Artistic', 
+                          'S': 'Social', 'E': 'Enterprising', 'C': 'Conventional'}
+            for trait, score in riasec.items():
+                if score > 0:
+                    bar_length = int(score * 10)
+                    bar = "█" * bar_length + "░" * (10 - bar_length)
+                    lines.append(f"  {trait_names[trait]}: {bar} {score:.1%}")
+        
+        return "\n".join(lines)
+    else:
+        # Compact view for chat
+        return f"**{props['course_code']}** - {props['course_title']} ({props['level']}, {props['credits']} credits, Sem {props['semester']})"
+
+def format_courses_for_chat_response(courses, max_courses=5):
+    """Format courses for chat display with all properties"""
+    if not courses:
+        return []
+    
+    formatted = []
+    for course in courses[:max_courses]:
+        props = extract_all_course_properties(course)
+        formatted.append({
+            'course_code': props['course_code'],
+            'title': props['course_title'],
+            'description': props['description'][:120] if props['description'] else '',
+            'level': props['level'],
+            'credits': props['credits'],
+            'duration': props['duration'],
+            'semester': props['semester'],
+            'department': props['department'],
+            'prerequisites': props['prerequisites'],
+            'instructor': props['instructor'],
+            'riasec_alignment': props.get('riasec_alignment', {}),
+            'score': round(course.get('score', 0) * 100, 1) if course.get('score') else None
+        })
+    
+    return formatted
+
+# ============================================================================
+# DEPENDENCY & PATHWAY FUNCTIONS
+# ============================================================================
+
+def get_course_dependencies(_drv, course_code: str, direction: str = "prerequisites") -> Dict[str, Any]:
+    """Retrieve course dependency information"""
+    if direction == "prerequisites":
+        cypher = """
+        MATCH (c:Course {course_code: $course_code})
+        OPTIONAL MATCH prereq_path = (c)-[:REQUIRES*1..5]->(pre:Course)
+        WITH c, collect(DISTINCT prereq_path) as paths
+        RETURN c.course_code AS course_code,
+               c.course_title AS title,
+               c.prereq_course_codes AS prereq_codes,
+               [path in paths WHERE path IS NOT NULL | [node in nodes(path) | {code: node.course_code, title: node.course_title}]] AS prerequisite_paths
+        """
+    else:
+        cypher = """
+        MATCH (c:Course {course_code: $course_code})
+        OPTIONAL MATCH postreq_path = (c)<-[:REQUIRES*1..5]-(post:Course)
+        WITH c, collect(DISTINCT postreq_path) as paths
+        RETURN c.course_code AS course_code,
+               c.course_title AS title,
+               c.prereq_course_codes AS prereq_codes,
+               [path in paths WHERE path IS NOT NULL | [node in nodes(path) | {code: node.course_code, title: node.course_title}]] AS postrequisite_paths
+        """
+
+    result = run_read_cypher(_drv, cypher, {'course_code': course_code})
+    return result[0] if result else {}
+
+def build_dependency_tree(_drv, course_code: str, direction: str = "prerequisites") -> Optional[str]:
+    """Build ASCII dependency tree visualization"""
+    deps = get_course_dependencies(_drv, course_code, direction)
+    if not deps:
+        return None
+
+    paths_key = "prerequisite_paths" if direction == "prerequisites" else "postrequisite_paths"
+    tree_paths = deps.get(paths_key, []) or []
+    valid_paths = [path for path in tree_paths if path and len(path) > 1]
+
+    if not valid_paths and direction == "postrequisites":
+        search_query = """
+        MATCH (c:Course)
+        WHERE c.prereq_course_codes CONTAINS $course_code
+        RETURN c.course_code AS course_code, c.course_title AS title
+        LIMIT 200
+        """
+        dependent_courses = run_read_cypher(_drv, search_query, {"course_code": course_code}) or []
+
+        if dependent_courses:
+            course_title = deps.get("title", "")
+            header = f"{course_code} - {course_title or '[Title not available]'}"
+            lines = [f"📚 {header}", f"{'─' * (len(header) + 4)}", "Courses This Unlocks:"]
+
+            for i, dep_course in enumerate(dependent_courses):
+                dep_code = dep_course.get("course_code", "")
+                dep_title = dep_course.get("title", "")
+                display = f"{dep_code} - {dep_title or '[Title not available]'}"
+                connector = "    " if i == 0 else "or  "
+                lines.append(f"{connector}{display}")
+
+            return "\n".join(lines)
+
+    if not valid_paths and direction == "prerequisites":
+        raw_prereqs = deps.get("prereq_codes") or deps.get("prereq_course_codes") or ""
+        codes = [c.strip() for c in re.split(r'[,;\n]+', raw_prereqs) if c.strip()]
+        if not codes:
+            return None
+
+        cypher_titles = """
+        UNWIND $codes AS code
+        OPTIONAL MATCH (x:Course {course_code: code})
+        RETURN code AS code, x.course_title AS title
+        """
+        rows = run_read_cypher(_drv, cypher_titles, {"codes": codes}) or []
+        titles_map = {r.get("code"): r.get("title") or "" for r in rows}
+
+        course_title = deps.get("title", "")
+        header = f"{course_code} - {course_title or '[Title not available]'}"
+        lines = [f"📚 {header}", f"{'─' * (len(header) + 4)}", "Prerequisites:"]
+
+        for i, code in enumerate(codes):
+            title = titles_map.get(code, "")
+            display = f"{code} - {title or '[Title not available]'}"
+            connector = "    " if i == 0 else "or  "
+            lines.append(f"{connector}{display}")
+
+        return "\n".join(lines)
+
+    if not valid_paths:
+        return None
+
+    tree = {}
+    for path in valid_paths:
+        current = tree
+        for node in path[1:]:
+            code = node.get("code", "")
+            title = node.get("title", "")
+            display = f"{code} - {title or '[Title not available]'}"
+            current = current.setdefault(display, {})
+
+    direction_label = "Prerequisites" if direction == "prerequisites" else "Courses This Unlocks"
+    course_title = deps.get("title", "")
+    header = f"{course_code} - {course_title or '[Title not available]'}"
+    lines = [f"📚 {header}", f"{'─' * (len(header) + 4)}", direction_label + ":"]
+
+    def render_tree(subtree, prefix=""):
+        items = list(subtree.items())
+        for i, (display_name, children) in enumerate(items):
+            connector = "    " if i == 0 else "or  "
+            lines.append(f"{prefix}{connector}{display_name}")
+            if children:
+                render_tree(children, prefix + "    ")
+
+    render_tree(tree)
+    return "\n".join(lines)
+
+def build_full_pathway_tree(_drv, course_code: str) -> Optional[str]:
+    """Build comprehensive ASCII tree showing prerequisites AND postrequisites"""
+    prereq_deps = get_course_dependencies(_drv, course_code, "prerequisites")
+    postreq_deps = get_course_dependencies(_drv, course_code, "postrequisites")
+
+    if not prereq_deps and not postreq_deps:
+        return None
+
+    course_title = prereq_deps.get("title", "") or postreq_deps.get("title", "")
+    lines = [
+        "=" * 80,
+        f"🎓 COMPLETE LEARNING PATHWAY FOR: {course_code} - {course_title or '[Title not available]'}",
+        "=" * 80,
+        ""
+    ]
+
+    lines.append("📚 PREREQUISITES (What to study BEFORE):")
+    lines.append("─" * 80)
+
+    prereq_paths = prereq_deps.get("prerequisite_paths", []) or []
+    valid_prereq_paths = [path for path in prereq_paths if path and len(path) > 1]
+
+    def render_tree(subtree, prefix=""):
+        items = list(subtree.items())
+        for i, (display_name, children) in enumerate(items):
+            connector = "    " if i == 0 else "or  "
+            lines.append(f"{prefix}{connector}{display_name}")
+            if children:
+                render_tree(children, prefix + "    ")
+
+    if valid_prereq_paths:
+        prereq_tree = {}
+        for path in valid_prereq_paths:
+            current = prereq_tree
+            for node in path[1:]:
+                code = node.get("code", "")
+                title = node.get("title", "")
+                display = f"{code} - {title or '[Title not available]'}"
+                current = current.setdefault(display, {})
+        render_tree(prereq_tree)
+    else:
+        raw_prereqs = prereq_deps.get("prereq_codes") or prereq_deps.get("prereq_course_codes") or ""
+        codes = [c.strip() for c in re.split(r'[,;\n]+', raw_prereqs) if c.strip()]
+        if codes:
+            cypher_titles = """
+            UNWIND $codes AS code
+            OPTIONAL MATCH (x:Course {course_code: code})
+            RETURN code AS code, x.course_title AS title
+            """
+            rows = run_read_cypher(_drv, cypher_titles, {"codes": codes}) or []
+            title_map = {r.get("code"): r.get("title") or "" for r in rows}
+            for i, code in enumerate(codes):
+                title = title_map.get(code, "")
+                connector = "    " if i == 0 else "or  "
+                lines.append(f"{connector}{code} - {title or '[Title not available]'}")
+        else:
+            lines.append("   ℹ️  No prerequisites found - this might be a foundational course!")
+    lines.append("")
+
+    lines.append("🎯 YOUR PREFERRED COURSE:")
+    lines.append("─" * 80)
+    lines.append(f"   ➤  {course_code} - {course_title or '[Title not available]'}")
+    lines.append("")
+
+    lines.append("🚀 POSTREQUISITES (What you can study AFTER):")
+    lines.append("─" * 80)
+
+    postreq_paths = postreq_deps.get("postrequisite_paths", []) or []
+    valid_postreq_paths = [path for path in postreq_paths if path and len(path) > 1]
+
+    if valid_postreq_paths:
+        postreq_tree = {}
+        for path in valid_postreq_paths:
+            current = postreq_tree
+            for node in path[1:]:
+                code = node.get("code", "")
+                title = node.get("title", "")
+                display = f"{code} - {title or '[Title not available]'}"
+                current = current.setdefault(display, {})
+        render_tree(postreq_tree)
+    else:
+        search_query = """
+        MATCH (c:Course)
+        WHERE c.prereq_course_codes CONTAINS $course_code
+        RETURN c.course_code AS course_code, c.course_title AS title
+        LIMIT 50
+        """
+        dependent_courses = run_read_cypher(_drv, search_query, {"course_code": course_code}) or []
+        if dependent_courses:
+            for i, dep in enumerate(dependent_courses):
+                code = dep.get("course_code", "")
+                title = dep.get("title", "")
+                connector = "    " if i == 0 else "or  "
+                lines.append(f"{connector}{code} - {title or '[Title not available]'}")
+        else:
+            lines.append("   ℹ️  No advanced courses found - this might be a terminal/capstone course!")
+    lines.append("")
+    lines.append("=" * 80)
+    lines.append("💡 TIP: Follow this pathway from top to bottom for optimal learning progression!")
+    lines.append("=" * 80)
+
+    return "\n".join(lines)
+
+# ============================================================================
+# CAREER PLANNING FUNCTIONS
+# ============================================================================
+
+def get_career_recommendations(username, _drv, database_name: str = None) -> Dict[str, Any]:
+    """Get career recommendations based on RIASEC results and marks"""
+    if not driver:
+        return {}
+    
+    try:
+        with driver.session(database=database_name or NEO4J_DATABASE) as s:
+            # Get user's RIASEC results and marks
+            result = s.run("""
+                MATCH (u:User {username: $username})
+                RETURN u.riasec_top3 AS top3,
+                       u.riasec_scores AS scores
+            """, username=username).single()
+            
+            if not result or not result['top3']:
+                return {}
+            
+            top3 = result['top3']
+            
+            # Get recommended courses based on RIASEC
+            cypher = """
+            MATCH (c:Course)
+            WHERE (c.R IN $top3 OR c.I IN $top3 OR c.A IN $top3 OR 
+                   c.S IN $top3 OR c.E IN $top3 OR c.C IN $top3)
+            RETURN c.course_code AS code,
+                   c.course_title AS title,
+                   c.recommended_semester AS semester,
+                   c.description AS description
+            LIMIT 10
+            """
+            
+            courses = s.run(cypher, top3=top3)
+            
+            return {
+                'top_traits': top3,
+                'recommended_courses': [dict(record) for record in courses]
+            }
+    except Exception as e:
+        print(f"Error getting career recommendations: {e}")
+        return {}
+
+def get_semester_courses(username, semester, _drv, database_name: str = None) -> List[Dict]:
+    """Get all courses for a specific semester for a user"""
+    if not driver:
+        return []
+    
+    try:
+        with driver.session(database=database_name or NEO4J_DATABASE) as s:
+            result = s.run("""
+                MATCH (u:User {username: $username})-[:HAS_PLAYLIST]->(p:Playlist)-[:CONTAINS]->(c:Course)
+                WHERE c.recommended_semester = $semester OR c.recommended_semester CONTAINS $sem_str
+                RETURN c.course_code AS course_code,
+                       c.course_title AS course_title,
+                       c.credits AS credits,
+                       c.description AS description,
+                       c.R AS R, c.I AS I, c.A AS A, c.S AS S, c.E AS E, c.C AS C
+                ORDER BY c.course_code
+            """, username=username, semester=int(semester), sem_str=str(semester))
+            
+            return [dict(record) for record in result]
+    except Exception as e:
+        print(f"Error getting semester courses: {e}")
+        return []
+
+# ============================================================================
+# SEMANTIC SEARCH FUNCTIONS
+# ============================================================================
+
 def semantic_search_courses(_drv, query_text: str, top_k: int = 10) -> List[Dict[str, Any]]:
     if not embedding_model:
-        # Fallback: simple text search
         q = """
         MATCH (c:Course)
         WHERE toLower(c.course_title) CONTAINS toLower($q) OR toLower(c.course_code) CONTAINS toLower($q)
         RETURN c.course_code AS course_code, 
-               c.course_title AS title, 
+               c.course_title AS course_title, 
                c.subject_area AS subject_area,
-               c.prereq_course_codes AS prereq_codes,
+               c.credits AS credits,
+               c.level AS level,
+               c.department AS department,
+               c.description AS description,
+               c.prereq_course_codes AS prereq_course_codes,
+               c.R AS R, c.I AS I, c.A AS A, c.S AS S, c.E AS E, c.C AS C,
+               c.course_riasec_vector AS course_riasec_vector,
+               c.recommended_semester AS recommended_semester,
+               c.category AS category,
                0.5 as score
         LIMIT $top_k
         """
@@ -610,20 +1225,20 @@ def semantic_search_courses(_drv, query_text: str, top_k: int = 10) -> List[Dict
     cypher = """
     CALL db.index.vector.queryNodes('course_embedding_index', $top_k, $query_vector) 
     YIELD node, score
-    MATCH (c:Course) WHERE id(c) = id(node)
-    OPTIONAL MATCH (c)-[:REQUIRES]->(pre:Course)
-    OPTIONAL MATCH (post:Course)-[:REQUIRES]->(c)
-    OPTIONAL MATCH (c)-[:BELONGS_TO]->(s:SubjectArea)
-    OPTIONAL MATCH (c)-[:MATCHES_JOB]->(j:Job)
+    MATCH (c:Course) WHERE elementId(c) = elementId(node)
     RETURN c.course_code AS course_code,
-           c.course_title AS title,
+           c.course_title AS course_title,
            c.subject_area AS subject_area,
-           c.prereq_course_codes AS prereq_codes,
-           score,
-           collect(DISTINCT pre.course_code) AS direct_prerequisites,
-           collect(DISTINCT post.course_code) AS postrequisites,
-           collect(DISTINCT s.name) AS subject_areas,
-           collect(DISTINCT j.job_title) AS job_matches
+           c.credits AS credits,
+           c.level AS level,
+           c.department AS department,
+           c.description AS description,
+           c.prereq_course_codes AS prereq_course_codes,
+           c.R AS R, c.I AS I, c.A AS A, c.S AS S, c.E AS E, c.C AS C,
+           c.course_riasec_vector AS course_riasec_vector,
+           c.recommended_semester AS recommended_semester,
+           c.category AS category,
+           score
     ORDER BY score DESC
     """
 
@@ -645,16 +1260,13 @@ def semantic_search_jobs(_drv, query_text: str, top_k: int = 10) -> List[Dict[st
     cypher = """
     CALL db.index.vector.queryNodes('job_embedding_index', $top_k, $query_vector) 
     YIELD node, score
-    MATCH (j:Job) WHERE id(j) = id(node)
+    MATCH (j:Job) WHERE elementId(j) = elementId(node)
     OPTIONAL MATCH (c:Course)-[:MATCHES_JOB]->(j)
-    OPTIONAL MATCH (s:SubjectArea)-[:MATCHES_JOB]->(j)
     RETURN j.job_id AS job_id,
            j.job_title AS job_title,
            j.ss_jd AS skills_description,
            score,
-           collect(DISTINCT c.course_code) AS related_courses,
-           collect(DISTINCT c.course_title) AS course_titles,
-           collect(DISTINCT s.name) AS related_subjects
+           collect(DISTINCT c.course_code) AS related_courses
     ORDER BY score DESC
     """
 
@@ -667,7 +1279,10 @@ def semantic_search_jobs(_drv, query_text: str, top_k: int = 10) -> List[Dict[st
         print(f"Job search error: {e}")
         return []
 
-# Conversation detection
+# ============================================================================
+# CONVERSATION DETECTION
+# ============================================================================
+
 def detect_casual_conversation(user_input: str) -> bool:
     input_lower = user_input.lower().strip()
 
@@ -691,11 +1306,12 @@ def detect_casual_conversation(user_input: str) -> bool:
 
     return False
 
-def get_conversational_response(user_input: str) -> str:
+def get_conversational_response(user_input: str, username: str = None) -> str:
     input_lower = user_input.lower().strip()
+    greeting = f"Hi there" if not username else f"Hi {username}"
 
     if re.match(r'^(hi|hello|hey+|hii+)$', input_lower):
-        return """Hi there! 
+        return f"""{greeting}!
 
 I'm your Jain University Course & Career Assistant. I'm here to help you explore:
 
@@ -703,16 +1319,18 @@ I'm your Jain University Course & Career Assistant. I'm here to help you explore
 - Prerequisites - Discover what you need to study before advanced courses  
 - Career Paths - Explore job opportunities for Jain University graduates
 - Learning Pathways - Plan your academic journey
+- Your Playlist - View and manage your selected courses
 
 What would you like to know about? You can ask me things like:
 - "What courses are available in Computer Science?"
 - "What are the prerequisites for Data Science?"
 - "What jobs can I get with an AI degree?"
+- "Show me my playlist for semester 3"
 
 How can I help you today?"""
 
     elif re.match(r'^(what\'s up|sup)$', input_lower):
-        return """Not much! Just here waiting to help Jain University students like you navigate their academic journey!
+        return f"""Not much {username or 'there'}! Just here waiting to help Jain University students like you navigate their academic journey!
 
 I can help you discover courses, understand prerequisites, explore career opportunities, and plan your learning pathway.
 
@@ -731,8 +1349,13 @@ Try asking me something like "What courses are good for AI?" or "Show me compute
 
 What would you like to know about?"""
 
-# Query processing
-def process_user_query(_drv, user_input: str) -> Dict[str, Any]:
+# ============================================================================
+# QUERY PROCESSING
+# ============================================================================
+
+def process_user_query(_drv, user_input: str, username: str = None) -> Dict[str, Any]:
+    """Process user query and determine appropriate search strategy"""
+
     if detect_casual_conversation(user_input):
         return {
             'courses': [],
@@ -741,7 +1364,7 @@ def process_user_query(_drv, user_input: str) -> Dict[str, Any]:
             'search_type': 'casual_conversation',
             'context': 'jain_university',
             'specific_course': None,
-            'conversational_response': get_conversational_response(user_input)
+            'conversational_response': get_conversational_response(user_input, username)
         }
 
     input_lower = user_input.lower()
@@ -754,75 +1377,133 @@ def process_user_query(_drv, user_input: str) -> Dict[str, Any]:
         'specific_course': None
     }
 
-    # Check for specific course codes
     course_codes = re.findall(r'([A-Za-z]{2,}[-\s]?\d{2,3})', user_input, re.IGNORECASE)
 
-    # Do semantic search for courses
     course_results = semantic_search_courses(_drv, user_input, top_k=10)
     results['courses'] = course_results
 
-    # Check query intent
-    is_job_query = any(term in input_lower for term in ['job', 'career', 'work', 'employment', 'opportunity', 'hire'])
-    is_prereq_query = any(term in input_lower for term in ['prerequisite', 'prereq', 'pre-req', 'dependency', 'require', 'before'])
+    job_terms = [
+        "job", "career", "work", "employment", "opportunity", "hire", "hiring",
+        "profession", "industry", "vacancy", "recruitment"
+    ]
 
-    if is_job_query:
+    prereq_terms = [
+        "prerequisite", "prereq", "pre-req", "dependency", "requirement",
+        "required before", "before taking", "needed before", "need to learn before",
+        "must complete before", "foundation for", "prepare for", "pre req", "pre reqs", "pre recs"
+    ]
+
+    postreq_terms = [
+        "postrequisite", "postreq", "post-req", "leads to", "next", "after",
+        "can take after", "follow-up", "advanced course", "what comes after",
+        "continue with", "next step", "progress to", "post rec", "post recs", "post req", "post reqs"
+    ]
+
+    pathway_terms = [
+        "pathway", "learning path", "study path", "progression", "roadmap",
+        "journey", "complete path", "full path", "learning journey", "entire path",
+        "curriculum map", "flow", "syllabus flow", "track", "academic track"
+    ]
+
+    def contains_any(text: str, terms: list) -> bool:
+        return any(term in text for term in terms)
+
+    is_job_query = contains_any(input_lower, job_terms)
+    is_prereq_query = contains_any(input_lower, prereq_terms)
+    is_postreq_query = contains_any(input_lower, postreq_terms)
+    is_pathway_query = contains_any(input_lower, pathway_terms)
+
+    if is_pathway_query:
+        results['search_type'] = 'full_pathway'
+
+        if course_codes:
+            main_course = course_codes[0].upper().replace(' ', '-')
+            results['ascii_tree'] = build_full_pathway_tree(_drv, main_course)
+            results['specific_course'] = main_course
+        elif course_results:
+            main_course = course_results[0]['course_code']
+            results['ascii_tree'] = build_full_pathway_tree(_drv, main_course)
+            results['specific_course'] = main_course
+
+    elif course_codes and (is_prereq_query or is_postreq_query):
+        main_course = course_codes[0].upper().replace(' ', '-')
+        direction = "prerequisites" if is_prereq_query else "postrequisites"
+        results['ascii_tree'] = build_dependency_tree(_drv, main_course, direction)
+        results['search_type'] = f'dependency_{direction}'
+        results['specific_course'] = main_course
+
+    elif is_job_query:
         job_results = semantic_search_jobs(_drv, user_input, top_k=8)
         results['jobs'] = job_results
         results['search_type'] = 'job_search'
-    elif is_prereq_query and course_results:
-        main_course = course_results[0]['course_code']
-        results['search_type'] = 'dependency_prerequisites'
-        results['specific_course'] = main_course
+
     else:
         results['search_type'] = 'course_search'
 
+        if (is_prereq_query or is_postreq_query) and course_results:
+            main_course = course_results[0]['course_code']
+            direction = "prerequisites" if is_prereq_query else "postrequisites"
+            results['ascii_tree'] = build_dependency_tree(_drv, main_course, direction)
+            results['specific_course'] = main_course
+
+        elif course_results:
+            main_course = course_results[0]['course_code']
+            results['ascii_tree'] = build_dependency_tree(_drv, main_course, "prerequisites")
+
     return results
 
-# Response generation
+def format_course_bolding(text):
+    """Automatically bolds course codes and titles"""
+    pattern = r"\b([A-Z]{2,4}-\d{2,3})[:\-]\s*([A-Za-z& ]+)"
+
+    def repl(match):
+        code = match.group(1).strip()
+        title = match.group(2).strip()
+        return f"**{code}: {title}**"
+
+    return re.sub(pattern, repl, text)
+
+# ============================================================================
+# RESPONSE GENERATION
+# ============================================================================
+
 def generate_response(query_results: Dict[str, Any], user_input: str, client,
                       conversation_history: List[Dict] = None,
                       reference_document: str = None,
                       _drv=None,
                       database_name: str = None,
                       username: str = None) -> str:
-
-    # Handle casual conversation
+    
     if query_results.get("search_type") == "casual_conversation":
         return query_results.get("conversational_response",
                                  "Hello! How can I help you with Jain University courses today?")
 
-    # Handle prerequisite queries
     if query_results.get("search_type", "").startswith("dependency_prerequisites"):
         top = None
         if query_results.get("courses"):
             top = query_results["courses"][0]
         if top and top.get("course_code"):
-            return f"I found this course matching your query: {top.get('course_code')} - {top.get('title', '')}. However, prerequisite information is not available in the database yet."
+            return f"I found this course matching your query: {top.get('course_code')} - {top.get('course_title', '')}. Prerequisite information is being processed."
         return "I couldn't find prerequisites for that course in the database."
 
     if not client:
         return generate_fallback_response(query_results, user_input)
 
-    # Use sliding window memory
     memory = SlidingWindowMemory(recent_messages_count=6, max_context_tokens=1500)
 
-    # Build context
     context = ""
     if conversation_history:
-        context = memory.build_context(conversation_history, user_input, client)
+        context = memory.build_context(conversation_history, user_input, client, username)
 
-    # Prepare course/job info
+    # Format courses with ALL properties
     courses_info = ""
-    jobs_info = ""
-
     if query_results.get('courses'):
         courses_info = "AVAILABLE COURSES:\n"
         for course in query_results['courses'][:5]:
-            course_code = course.get('course_code', '')
-            title = course.get('title') or course.get('course_title', '')
-            subject = course.get('subject_area', '')
-            courses_info += f"- {course_code}: {title} ({subject})\n"
+            formatted = format_course_for_display(course, detailed=False)
+            courses_info += f"• {formatted}\n"
 
+    jobs_info = ""
     if query_results.get('jobs'):
         jobs_info = "CAREER OPPORTUNITIES:\n"
         for job in query_results['jobs'][:3]:
@@ -833,23 +1514,44 @@ def generate_response(query_results: Dict[str, Any], user_input: str, client,
                 jobs_info += f" (requires: {', '.join(related_courses[:2])})"
             jobs_info += "\n"
 
-    # System prompt
-    system_prompt = """You are an academic counselor for Jain University who is genuinely curious about students' interests and goals.
+    formatted_top_k = "Not available"
+    if username and _drv:
+        try:
+            with _drv.session(database=database_name or NEO4J_DATABASE) as s:
+                result = s.run("""
+                    MATCH (u:User {username: $username})
+                    RETURN u.riasec_scores AS all_scores
+                """, username=username).single()
+
+                if result and result['all_scores']:
+                    riasec_scores = json.loads(result['all_scores'])
+                    top_k = sorted(riasec_scores.items(), key=lambda x: x[1], reverse=True)[:3]
+                    formatted_top_k = ", ".join([f"{trait}: {score * 100:.1f}%" for trait, score in top_k])
+        except Exception as e:
+            print(f"Error fetching RIASEC scores: {e}")
+            formatted_top_k = "Not available"
+
+    system_prompt = f"""You are an academic counselor for Jain University who is genuinely curious about students' interests and goals.
 
 INSTRUCTIONS:
-1. Use the provided context for personal information
+1. Use the provided context for personal information (user's name is in context)
 2. Reference conversation history for context about past topics
 3. Use recent messages for immediate conversation flow
 4. Only mention information that's explicitly in these sections
 5. If asked about something not in context, say "We haven't discussed that yet"
+6. Always personalize responses using the student's name when available
 
 CURIOSITY & ENGAGEMENT:
 - ALWAYS end your response with 1-2 curious questions
 - Ask about their interests, preferences, or experiences related to the topic
+- Address students by their name when you know it
 
-Keep responses 2-3 paragraphs, recommend relevant courses, then ask engaging questions."""
+RIASEC SCORES & CAREER FIT:
+- Student's top 3 personality traits: {formatted_top_k}
+- Use these to suggest aligned courses/careers when relevant
 
-    # Build message for LLM
+Keep responses 2-3 paragraphs, recommend relevant courses with full details, then ask engaging questions."""
+
     full_context = []
     if context:
         full_context.append(context)
@@ -876,16 +1578,16 @@ Keep responses 2-3 paragraphs, recommend relevant courses, then ask engaging que
             temperature=0.3
         )
 
-        # Ensure response ends with a question
-        response = response.strip()
-        if response and not any(response.rstrip().endswith(q) for q in ['?', '? ', '?)']):
+        response = format_course_bolding(response)
+
+        if not any(response.rstrip().endswith(q) for q in ['?', '? ', '?)']):
             response += " What aspects of this interest you most?"
 
         return response
 
     except Exception as e:
-        print(f"LLM Error: {str(e)}")
-        return generate_fallback_response(query_results, user_input)
+        fallback = generate_fallback_response(query_results, user_input)
+        return format_course_bolding(fallback)
 
 def generate_fallback_response(query_results: Dict[str, Any], user_input: str) -> str:
     courses_count = len(query_results.get('courses', []))
@@ -899,9 +1601,8 @@ def generate_fallback_response(query_results: Dict[str, Any], user_input: str) -
     if courses_count > 0:
         response_parts.append("I found these relevant courses at Jain University:")
         for course in query_results['courses'][:3]:
-            course_code = course.get('course_code', '')
-            title = course.get('title') or course.get('course_title', '')
-            response_parts.append(f"• {course_code} - {title}")
+            formatted = format_course_for_display(course, detailed=False)
+            response_parts.append(f"• {formatted}")
 
     if jobs_count > 0:
         response_parts.append("\nRelated career opportunities:")

@@ -1,600 +1,818 @@
 {% extends "base.html" %}
+
+{% block title %}My Profile - Jain University{% endblock %}
+
 {% block content %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Jain Design Your Degree</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-        body {
-            background: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .profile-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .profile-header-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .user-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 50px;
+        margin: 0 auto 20px;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .profile-header-card h1 {
+        color: #333;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+
+    .profile-header-card p {
+        color: #666;
+        font-size: 1.1em;
+    }
+
+    .tabs-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        padding: 12px 25px;
+        border: 2px solid #e0e0e0;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        color: #333;
+    }
+
+    .tab-btn:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .tab-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+    }
+
+    .tab-content {
+        display: none;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .form-section h3 {
+        color: #667eea;
+        font-size: 1.3em;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 10px;
+        color: #333;
+        font-weight: 600;
+        font-size: 1.05em;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1em;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .semester-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 12px;
+        margin-top: 15px;
+    }
+
+    .semester-btn {
+        padding: 15px;
+        border: 2px solid #ddd;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.95em;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .semester-btn:hover {
+        border-color: #667eea;
+        background-color: #f0f4ff;
+        transform: translateY(-2px);
+    }
+
+    .semester-btn.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+    }
+
+    .info-box {
+        background-color: #f0f4ff;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        color: #444;
+        font-size: 0.95em;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .stat-number {
+        font-size: 2.5em;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .stat-label {
+        font-size: 0.95em;
+        opacity: 0.9;
+    }
+
+    .playlist-item {
+        background: #f9f9f9;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .playlist-item:hover {
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        border-color: #667eea;
+    }
+
+    .course-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .course-code {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9em;
+    }
+
+    .course-title {
+        font-size: 1.15em;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .course-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 12px;
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 3px;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 600;
+        margin-right: 8px;
+        margin-bottom: 8px;
+    }
+
+    .badge-semester {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .badge-level {
+        background-color: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .badge-credits {
+        background-color: #e8f5e9;
+        color: #388e3c;
+    }
+
+    .riasec-scores {
+        background: #fff9e6;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 12px;
+        border-left: 4px solid #ffc107;
+    }
+
+    .score-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.9em;
+    }
+
+    .score-bar {
+        flex: 1;
+        background: #e0e0e0;
+        height: 6px;
+        border-radius: 3px;
+        margin: 0 10px;
+        overflow: hidden;
+    }
+
+    .score-fill {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 13px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background-color: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background-color: #d0d0d0;
+    }
+
+    .no-items {
+        text-align: center;
+        padding: 40px;
+        background: #f9f9f9;
+        border-radius: 10px;
+        color: #999;
+    }
+
+    .semester-playlist-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background: #f5f5f5;
+        border-radius: 10px;
+    }
+
+    .semester-title {
+        font-size: 1.3em;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .semester-count {
+        background: #667eea;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .profile-wrapper {
+            margin: 10px;
         }
+
+        .profile-header-card h1 {
+            font-size: 1.8em;
+        }
+
+        .semester-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .course-meta {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="profile-wrapper">
+    <!-- Header Card with User Info -->
+    <div class="profile-header-card">
+        <div class="user-avatar">👤</div>
+        <h1>{{ (profile_data.get('display_name') if profile_data else username) or username }}</h1>
+        <p>Jain University Student</p>
+        <p style="font-size: 0.95em; color: #999; margin-top: 10px;">
+            📧 {{ (profile_data.get('email') if profile_data else 'Not set') or 'Not set' }}
+        </p>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab(event, 'profile')">
+            👤 My Profile
+        </button>
+        <button class="tab-btn" onclick="switchTab(event, 'semester')">
+            📅 Semester Planning
+        </button>
+        <button class="tab-btn" onclick="switchTab(event, 'playlist')">
+            📚 My Playlist ({{ (playlist_data|length if playlist_data else 0) }})
+        </button>
+        <button class="tab-btn" onclick="switchTab(event, 'marks')">
+            📊 Academic Marks
+        </button>
+        <button class="tab-btn" onclick="switchTab(event, 'riasec')">
+            🎯 Career Match
+        </button>
+    </div>
+
+    <!-- TAB 1: PROFILE SETTINGS -->
+    <div id="profile" class="tab-content active">
+        <h2 style="color: #667eea; margin-bottom: 20px;">👤 My Profile</h2>
         
-        .profile-container {
-            max-width: 1200px;
-            margin: 20px auto;
-        }
-
-        /* Cover Image Section */
-        .cover-section {
-            position: relative;
-            height: 300px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px 15px 0 0;
-            overflow: hidden;
-        }
-
-        .cover-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .cover-upload-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 10;
-        }
-
-        /* Profile Picture */
-        .profile-picture-section {
-            position: relative;
-            margin-top: -80px;
-            text-align: center;
-            z-index: 5;
-        }
-
-        .profile-picture {
-            width: 160px;
-            height: 160px;
-            border-radius: 50%;
-            border: 5px solid white;
-            object-fit: cover;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .profile-upload-btn {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        /* Profile Content */
-        .profile-content {
-            background: white;
-            border-radius: 0 0 15px 15px;
-            padding: 100px 30px 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-
-        .profile-header-info {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .profile-header-info h2 {
-            color: #667eea;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .profile-header-info p {
-            color: #6c757d;
-            margin-bottom: 15px;
-        }
-
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .btn-action {
-            padding: 10px 25px;
-            border-radius: 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-download {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-        }
-
-        .btn-download:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-share {
-            background: #28a745;
-            color: white;
-            border: none;
-        }
-
-        .btn-share:hover {
-            background: #218838;
-            transform: translateY(-2px);
-        }
-
-        /* Stats Cards */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .stat-label {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        /* RIASEC Section */
-        .riasec-section {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .riasec-trait {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background: #f8f9fa;
-        }
-
-        .riasec-trait-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-right: 15px;
-            color: white;
-        }
-
-        .riasec-trait-info {
-            flex: 1;
-        }
-
-        .riasec-trait-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .riasec-trait-score {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        /* Marks Table */
-        .marks-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-
-        .marks-table th {
-            background: #667eea;
-            color: white;
-            padding: 15px;
-            text-align: left;
-        }
-
-        .marks-table td {
-            background: white;
-            padding: 15px;
-            border-top: 1px solid #dee2e6;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .marks-table tr td:first-child {
-            border-left: 1px solid #dee2e6;
-            border-radius: 10px 0 0 10px;
-        }
-
-        .marks-table tr td:last-child {
-            border-right: 1px solid #dee2e6;
-            border-radius: 0 10px 10px 0;
-        }
-
-        /* Edit Form */
-        .edit-section {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-top: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .form-control {
-            border-radius: 8px;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-
-        /* Share Modal */
-        .share-link-input {
-            background: #f8f9fa;
-            border: 2px dashed #667eea;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            word-break: break-all;
-        }
-
-        /* PDF-specific styles */
-        .pdf-content {
-            display: none;
-        }
-
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            .pdf-content {
-                display: block !important;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="profile-container">
-        <!-- Cover and Profile Picture Section -->
-        <div class="cover-section" id="coverSection">
-            <img id="coverImage" class="cover-image" style="display: none;" alt="Cover">
-            <button class="btn btn-light cover-upload-btn no-print" onclick="document.getElementById('coverInput').click()">
-                <i class="fas fa-camera"></i> Change Cover
-            </button>
-            <input type="file" id="coverInput" accept="image/*" style="display: none;" onchange="uploadCover(event)">
-        </div>
-
-        <div class="profile-content">
-            <div class="profile-picture-section">
-                <img id="profileImage" class="profile-picture" src="https://via.placeholder.com/160?text={{ profile.display_name[0] if profile.display_name else 'U' }}" alt="Profile">
-                <button class="btn btn-sm btn-primary profile-upload-btn no-print" onclick="document.getElementById('profileInput').click()">
-                    <i class="fas fa-camera"></i>
-                </button>
-                <input type="file" id="profileInput" accept="image/*" style="display: none;" onchange="uploadProfile(event)">
-            </div>
-
-            <!-- Profile Header Info -->
-            <div class="profile-header-info">
-                <h2>{{ profile.display_name or session.username }}</h2>
-                <p><i class="fas fa-envelope"></i> {{ profile.email or 'Not provided' }}</p>
-                <p><i class="fas fa-map-marker-alt"></i> {{ profile.location or 'Location not set' }}</p>
-                {% if profile.bio %}
-                <p class="text-muted">{{ profile.bio }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons no-print">
-                <button class="btn btn-action btn-download" onclick="downloadPDF()">
-                    <i class="fas fa-download"></i> Download Profile
-                </button>
-                <button class="btn btn-action btn-share" onclick="shareProfile()">
-                    <i class="fas fa-share-alt"></i> Share Profile
-                </button>
-                <button class="btn btn-action btn-secondary" onclick="toggleEdit()">
-                    <i class="fas fa-edit"></i> Edit Profile
-                </button>
-            </div>
-
-            <!-- Stats Row -->
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-icon" style="color: #667eea;">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <div class="stat-value">{{ "%.1f"|format(marks_data|sum(attribute='percentage')/marks_data|length if marks_data else 0) }}%</div>
-                    <div class="stat-label">Overall Average</div>
+        <form method="POST" action="{{ url_for('update_profile') }}">
+            <!-- Display Name -->
+            <div class="form-section">
+                <h3>✏️ Name & Contact</h3>
+                <div class="form-group">
+                    <label for="display_name">Your Name *</label>
+                    <input 
+                        type="text" 
+                        id="display_name" 
+                        name="display_name"
+                        value="{{ (profile_data.get('display_name') if profile_data else username) or '' }}"
+                        placeholder="Enter your full name"
+                        required
+                    >
                 </div>
 
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        value="{{ (profile_data.get('email') if profile_data else '') or '' }}"
+                        placeholder="your.email@jainuniversity.ac.in"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        name="phone"
+                        value="{{ (profile_data.get('phone') if profile_data else '') or '' }}"
+                        placeholder="+91-XXXXXXXXXX"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input 
+                        type="text" 
+                        id="location" 
+                        name="location"
+                        value="{{ (profile_data.get('location') if profile_data else '') or '' }}"
+                        placeholder="City, State"
+                    >
+                </div>
+            </div>
+
+            <!-- Bio -->
+            <div class="form-section">
+                <h3>📝 About You</h3>
+                <div class="form-group">
+                    <label for="bio">Bio / About Yourself</label>
+                    <textarea 
+                        id="bio" 
+                        name="bio"
+                        placeholder="Tell us about your academic interests and career goals..."
+                        style="resize: vertical; min-height: 100px;"
+                    >{{ (profile_data.get('bio') if profile_data else '') or '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">🚪 Logout</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- TAB 2: SEMESTER PLANNING -->
+    <div id="semester" class="tab-content">
+        <h2 style="color: #667eea; margin-bottom: 20px;">📅 Semester Planning</h2>
+        
+        <div class="info-box">
+            <strong>🎓 Select Your Current Semester:</strong> This helps us recommend courses appropriate for your level.
+        </div>
+
+        <form method="POST" action="{{ url_for('update_profile') }}">
+            <div class="form-section">
+                <h3>Choose Your Semester</h3>
+                
+                <div class="semester-grid">
+                    {% for sem in [1, 2, 3, 4, 5, 6, 7, 8] %}
+                        <button 
+                            type="button"
+                            class="semester-btn {% if profile_data and profile_data.get('current_semester', 1) == sem %}selected{% endif %}"
+                            onclick="selectSemester({{ sem }}, event)"
+                            data-semester="{{ sem }}"
+                        >
+                            Sem {{ sem }}
+                        </button>
+                    {% endfor %}
+                </div>
+                
+                <input 
+                    type="hidden" 
+                    id="current_semester" 
+                    name="current_semester"
+                    value="{{ (profile_data.get('current_semester') if profile_data else 1) or 1 }}"
+                >
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">💾 Save Semester</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- TAB 3: MY PLAYLIST - ORGANIZED BY SEMESTER -->
+    <div id="playlist" class="tab-content">
+        <h2 style="color: #667eea; margin-bottom: 20px;">📚 My Course Playlist</h2>
+        
+        <div class="info-box">
+            <strong>🎯 Your Playlist by Semester:</strong> All courses organized by semester.
+        </div>
+
+        {% if playlist_data and playlist_data|length > 0 %}
+            <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon" style="color: #28a745;">
-                        <i class="fas fa-book"></i>
+                    <div class="stat-number">{{ playlist_data|length }}</div>
+                    <div class="stat-label">Total Courses</div>
+                </div>
+                {% set total_credits = 0 %}
+                {% for course in playlist_data %}
+                    {% set total_credits = total_credits + (course.get('credits', 0)|int) %}
+                {% endfor %}
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_credits }}</div>
+                    <div class="stat-label">Total Credits</div>
+                </div>
+            </div>
+
+            <!-- Organize courses by semester -->
+            {% set semesters = {} %}
+            {% for course in playlist_data %}
+                {% set sem = (course.get('recommended_semester') if course else 'N/A')|int %}
+                {% if sem not in semesters %}
+                    {% set _ = semesters.update({sem: []}) %}
+                {% endif %}
+                {% set _ = semesters[sem].append(course) %}
+            {% endfor %}
+
+            <!-- Display courses organized by semester -->
+            {% for sem in [1, 2, 3, 4, 5, 6, 7, 8] %}
+                {% if sem in semesters and semesters[sem]|length > 0 %}
+                    <div class="semester-playlist-section">
+                        <div class="semester-title">
+                            📚 Semester {{ sem }}
+                            <span class="semester-count">{{ semesters[sem]|length }} course{{ 's' if semesters[sem]|length != 1 else '' }}</span>
+                        </div>
+
+                        {% for course in semesters[sem] %}
+                            <div class="playlist-item">
+                                <div class="course-header">
+                                    <div>
+                                        <span class="course-code">{{ (course.get('course_code') if course else 'N/A') or 'N/A' }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="course-title">{{ (course.get('course_title') if course else 'No Title') or 'No Title' }}</div>
+
+                                <div class="course-meta">
+                                    <div class="meta-item">
+                                        <span class="meta-label">📅 Semester:</span>
+                                        <span class="badge badge-semester">Sem {{ (course.get('recommended_semester') if course else 'N/A') or 'N/A' }}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-label">🎓 Level:</span>
+                                        <span class="badge badge-level">{{ (course.get('level') if course else 'Beginner') or 'Beginner' }}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-label">📚 Credits:</span>
+                                        <span class="badge badge-credits">{{ (course.get('credits') if course else 'N/A') or 'N/A' }}</span>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 12px; font-size: 0.9em; color: #666;">
+                                    <strong>📝 Description:</strong> {{ ((course.get('description') if course else 'N/A') or 'N/A')[:200] }}
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                    <div class="stat-value">{{ marks_data|length }}</div>
+                {% endif %}
+            {% endfor %}
+
+        {% else %}
+            <div class="no-items">
+                <p>📭 Your playlist is empty!</p>
+                <p style="margin-top: 15px; font-size: 0.95em;">
+                    Go to the <strong><a href="{{ url_for('assistant') }}" style="color: #667eea; text-decoration: underline;">AI Assistant →</a></strong> to search for courses and add them to your playlist.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- TAB 4: ACADEMIC MARKS -->
+    <div id="marks" class="tab-content">
+        <h2 style="color: #667eea; margin-bottom: 20px;">📊 Academic Marks</h2>
+        
+        {% if marks_data and marks_data|length > 0 %}
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ marks_data|length }}</div>
                     <div class="stat-label">Subjects</div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="stat-icon" style="color: #ffc107;">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-value">{{ riasec_data.top3|length if riasec_data else 0 }}</div>
-                    <div class="stat-label">Top Traits</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon" style="color: #dc3545;">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-value">{{ "%.0f"|format(profile.marks_completed|int * 50 + profile.riasec_completed|int * 50) }}%</div>
-                    <div class="stat-label">Profile Complete</div>
+                    <div class="stat-number">{{ "%.1f"|format((marks_data|map(attribute='percentage')|sum) / (marks_data|length)) }}%</div>
+                    <div class="stat-label">Average Score</div>
                 </div>
             </div>
 
-            <!-- RIASEC Results Section -->
-            {% if riasec_data %}
-            <div class="riasec-section">
-                <h4 class="mb-4"><i class="fas fa-brain"></i> Career Personality (RIASEC)</h4>
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Top 3 Traits:</h6>
-                        {% for trait in riasec_data.top3 %}
-                        <div class="riasec-trait">
-                            <div class="riasec-trait-icon" style="background: {% if loop.index == 1 %}#667eea{% elif loop.index == 2 %}#764ba2{% else %}#3498db{% endif %};">
-                                {% if trait == 'R' %}<i class="fas fa-tools"></i>
-                                {% elif trait == 'I' %}<i class="fas fa-flask"></i>
-                                {% elif trait == 'A' %}<i class="fas fa-palette"></i>
-                                {% elif trait == 'S' %}<i class="fas fa-users"></i>
-                                {% elif trait == 'E' %}<i class="fas fa-bullhorn"></i>
-                                {% elif trait == 'C' %}<i class="fas fa-clipboard-list"></i>
-                                {% endif %}
-                            </div>
-                            <div class="riasec-trait-info">
-                                <div class="riasec-trait-name">{{ get_trait_name(trait) }}</div>
-                                <div class="riasec-trait-score">{{ "%.1f"|format(riasec_data.scores[trait] * 100) }}%</div>
-                            </div>
-                        </div>
-                        {% endfor %}
+            {% for mark in marks_data %}
+            <div class="playlist-item">
+                <div class="course-header">
+                    <div>
+                        <span class="course-title">{{ mark.subject if mark else 'N/A' }}</span>
                     </div>
-                    <div class="col-md-6">
-                        <h6>All Scores:</h6>
-                        {% for trait, score in riasec_data.scores.items() %}
-                        <div class="mb-2">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>{{ get_trait_name(trait) }}</span>
-                                <span class="text-primary">{{ "%.1f"|format(score * 100) }}%</span>
-                            </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar" style="width: {{ score * 100 }}%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-                            </div>
-                        </div>
-                        {% endfor %}
+                    <div style="text-align: right;">
+                        <strong style="font-size: 1.3em; color: #667eea;">{{ "%.1f"|format(mark.percentage if mark else 0) }}%</strong>
                     </div>
                 </div>
+                
+                <div style="margin-top: 12px; width: 100%; background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
+                    <div style="width: {{ mark.percentage if mark else 0 }}%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%;"></div>
+                </div>
             </div>
-            {% endif %}
+            {% endfor %}
 
-            <!-- Academic Marks Section -->
-            <div class="riasec-section">
-                <h4 class="mb-4"><i class="fas fa-chart-bar"></i> Academic Performance</h4>
-                {% if marks_data %}
-                <table class="marks-table">
-                    <thead>
-                        <tr>
-                            <th>Subject</th>
-                            <th>Marks Obtained</th>
-                            <th>Total Marks</th>
-                            <th>Percentage</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for mark in marks_data %}
-                        <tr>
-                            <td><strong>{{ mark.subject }}</strong></td>
-                            <td>{{ mark.marks_scored }}</td>
-                            <td>{{ mark.total_marks }}</td>
-                            <td>
-                                <span class="badge" style="background: {% if mark.percentage >= 80 %}#28a745{% elif mark.percentage >= 60 %}#ffc107{% else %}#dc3545{% endif %}; padding: 8px 15px; font-size: 1rem;">
-                                    {{ "%.2f"|format(mark.percentage) }}%
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="text-muted">No marks data available.</p>
-                {% endif %}
+        {% else %}
+            <div class="no-items">
+                <p>📭 No marks entered yet</p>
+                <p style="margin-top: 10px;">
+                    <a href="{{ url_for('marks') }}" style="color: #667eea; text-decoration: underline; font-weight: 600;">
+                        Add your academic marks →
+                    </a>
+                </p>
             </div>
-
-            <!-- Edit Section (Hidden by default) -->
-            <div class="edit-section no-print" id="editSection" style="display: none;">
-                <h4 class="mb-4"><i class="fas fa-edit"></i> Edit Profile</h4>
-                <form method="POST" action="{{ url_for('update_profile') }}">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Display Name</label>
-                            <input type="text" class="form-control" name="display_name" value="{{ profile.display_name or '' }}">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" value="{{ profile.email or '' }}">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Phone</label>
-                            <input type="tel" class="form-control" name="phone" value="{{ profile.phone or '' }}">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Location</label>
-                            <input type="text" class="form-control" name="location" value="{{ profile.location or '' }}">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Bio</label>
-                        <textarea class="form-control" name="bio" rows="4">{{ profile.bio or '' }}</textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Save Changes
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="toggleEdit()">Cancel</button>
-                </form>
-            </div>
-        </div>
+        {% endif %}
     </div>
 
-    <!-- Share Modal -->
-    <div class="modal fade" id="shareModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-share-alt"></i> Share Your Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Share this link to let others view your profile:</p>
-                    <div class="share-link-input" id="shareLink"></div>
-                    <button class="btn btn-primary mt-3 w-100" onclick="copyShareLink()">
-                        <i class="fas fa-copy"></i> Copy Link
-                    </button>
-                </div>
+    <!-- TAB 5: RIASEC & CAREER MATCH -->
+    <div id="riasec" class="tab-content">
+        <h2 style="color: #667eea; margin-bottom: 20px;">🎯 Career Personality Match</h2>
+        
+        {% if riasec_data and riasec_data.get('scores') %}
+            <div class="info-box">
+                <strong>🎯 Your Career Profile:</strong> Based on your RIASEC assessment, here's your personality type.
             </div>
-        </div>
+
+            <!-- Complete Scores -->
+            <div class="form-section">
+                <h3>Complete RIASEC Scores</h3>
+                
+                {% set trait_list = ['R', 'I', 'A', 'S', 'E', 'C'] %}
+                {% set trait_names = {'R': 'Realistic', 'I': 'Investigative', 'A': 'Artistic', 'S': 'Social', 'E': 'Enterprising', 'C': 'Conventional'} %}
+                
+                {% for trait in trait_list %}
+                    {% set score = riasec_data.get('scores', {}).get(trait, 0) if riasec_data else 0 %}
+                    <div class="playlist-item">
+                        <div class="course-header">
+                            <div>
+                                <span class="course-code">{{ trait }}</span>
+                                <span class="course-title">{{ trait_names.get(trait, 'Unknown') }}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="font-size: 1.2em; color: #667eea;">{{ "%.1f"|format(score * 100) }}%</strong>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 12px; width: 100%;">
+                            <div style="width: 100%; background: #e0e0e0; border-radius: 10px; height: 10px; overflow: hidden;">
+                                <div style="width: {{ score * 100 }}%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% else %}
+            <div class="no-items">
+                <p>🎯 RIASEC Assessment Pending</p>
+                <p style="margin-top: 10px;">
+                    <a href="{{ url_for('survey') }}" style="color: #667eea; text-decoration: underline; font-weight: 600;">
+                        Take the RIASEC Career Assessment →
+                    </a>
+                </p>
+            </div>
+        {% endif %}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function toggleEdit() {
-            const editSection = document.getElementById('editSection');
-            editSection.style.display = editSection.style.display === 'none' ? 'block' : 'none';
-        }
+</div>
 
-        function uploadProfile(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('profileImage').src = e.target.result;
-                    // Save to server
-                    saveImage('profile', e.target.result);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
+<script>
+// Tab switching
+function switchTab(event, tabName) {
+    event.preventDefault();
+    
+    // Hide all tabs
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Remove active from all buttons
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    // Show selected tab
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+}
 
-        function uploadCover(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const coverImg = document.getElementById('coverImage');
-                    coverImg.src = e.target.result;
-                    coverImg.style.display = 'block';
-                    // Save to server
-                    saveImage('cover', e.target.result);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
+// Semester selection
+function selectSemester(semester, event) {
+    event.preventDefault();
+    document.getElementById('current_semester').value = semester;
+    document.querySelectorAll('.semester-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
+}
 
-        async function saveImage(type, imageData) {
-            try {
-                const response = await fetch('/profile/upload-image', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({type: type, image: imageData})
-                });
-                const result = await response.json();
-                if (result.success) {
-                    console.log('Image saved successfully');
-                }
-            } catch (error) {
-                console.error('Error saving image:', error);
-            }
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+    // Set selected semester button
+    const currentSem = document.getElementById('current_semester').value || '1';
+    document.querySelectorAll('.semester-btn').forEach(btn => {
+        if (btn.getAttribute('data-semester') === currentSem) {
+            btn.classList.add('selected');
         }
-
-        function downloadPDF() {
-            const element = document.querySelector('.profile-container');
-            const opt = {
-                margin: 10,
-                filename: '{{ session.username }}_profile.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
-
-        function shareProfile() {
-            const shareLink = window.location.origin + '/public-profile/{{ session.username }}';
-            document.getElementById('shareLink').textContent = shareLink;
-            const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
-            shareModal.show();
-        }
-
-        function copyShareLink() {
-            const shareLink = document.getElementById('shareLink').textContent;
-            navigator.clipboard.writeText(shareLink).then(() => {
-                alert('Link copied to clipboard!');
-            });
-        }
-
-        // Load saved images on page load
-        window.onload = async function() {
-            try {
-                const response = await fetch('/profile/get-images');
-                const data = await response.json();
-                if (data.profile_image) {
-                    document.getElementById('profileImage').src = data.profile_image;
-                }
-                if (data.cover_image) {
-                    const coverImg = document.getElementById('coverImage');
-                    coverImg.src = data.cover_image;
-                    coverImg.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error loading images:', error);
-            }
-        };
-    </script>
-</body>
-</html>
+    });
+});
+</script>
 {% endblock %}
